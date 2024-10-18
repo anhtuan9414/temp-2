@@ -7,8 +7,14 @@ sudo iptables -A INPUT -p all -j ACCEPT
 sudo iptables -A FORWARD -p all -j ACCEPT
 sudo iptables -A OUTPUT -p all -j ACCEPT
 sudo iptables -A InstanceServices -p all -j ACCEPT
-sudo iptables -t nat -I POSTROUTING -s 172.17.0.1 -j SNAT --to-source $(ip addr show ens3 | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /(10.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}')
-sudo iptables -t nat -I POSTROUTING -s 172.17.0.1 -j SNAT --to-source $(ip addr show enp0s5 | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /(10.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}')
+net=ens3
+if ip link show ens3 &> /dev/null; then
+  echo "Interface ens3 exists."
+else
+  echo "Interface ens3 does not exist. Set is enp0s5"
+  net=enp0s5
+fi
+sudo iptables -t nat -I POSTROUTING -s 172.17.0.1 -j SNAT --to-source $(ip addr show $net | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /(10.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}')
 sudo apt purge ntp -y
 sudo systemctl start systemd-timesyncd
 sudo systemctl status systemd-timesyncd >null
