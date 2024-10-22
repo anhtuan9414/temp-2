@@ -8,7 +8,7 @@ sudo iptables -A FORWARD -p all -j ACCEPT
 sudo iptables -A OUTPUT -p all -j ACCEPT
 sudo iptables -A InstanceServices -p all -j ACCEPT
 net=ens3
-if ip link show ens3 &> /dev/null; then
+if ip link show ens3 >/dev/null 2>&1; then
   echo "Interface ens3 exists."
 else
   echo "Interface ens3 does not exist. Set is enp0s5"
