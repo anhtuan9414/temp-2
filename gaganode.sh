@@ -49,4 +49,20 @@ sudo ./apps/gaganode/gaganode config set --token="$GAGANODE_TOKEN"
 echo "Restarting app..."
 ./apphub restart
 
+# Step 7: Check Gaganode status in a loop until it's running after restart
+echo "Verifying Gaganode status after restart..."
+while true; do
+    status_output=$(./apphub status)
+    echo "$status_output"
+
+    # Verify if gaganode status is 'RUNNING'
+    if echo "$status_output" | grep -q "gaganode.*status:\[RUNNING\]"; then
+        echo "Gaganode is RUNNING after restart."
+        break
+    else
+        echo "Gaganode is not running after restart. Retrying in 5 seconds..."
+        sleep 5
+    fi
+done
+
 echo "Script completed successfully."
