@@ -6,6 +6,11 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+sudo iptables -F
+sudo iptables -A INPUT -p all -j ACCEPT
+sudo iptables -A FORWARD -p all -j ACCEPT
+sudo iptables -A OUTPUT -p all -j ACCEPT
+sudo iptables -A InstanceServices -p all -j ACCEPT
 # Set the token variable from the argument
 GAGANODE_TOKEN="$1"
 
