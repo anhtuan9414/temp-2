@@ -13,7 +13,7 @@ while true; do
     fi
 done
 echo -e "${GREEN}Current Block: $currentblock${NC}"
-block=$((currentblock - 4))
+block=$((currentblock - 3))
 sudo chmod 666 /var/run/docker.sock
 PBKEY=$(docker exec uam_1 printenv PBKEY)
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
