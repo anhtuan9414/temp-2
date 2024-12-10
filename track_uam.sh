@@ -23,7 +23,6 @@ while [ $retry_count -lt $max_retries ]; do
       -H 'x-requested-with: XMLHttpRequest' | grep -o '"block":[0-9]*' | awk -F: '{print $2}' | head -n 1)
 
     if [ -n "$currentblock" ]; then
-        echo "Current block: $currentblock"
         break
     else
         retry_count=$((retry_count + 1))
