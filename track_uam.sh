@@ -94,7 +94,7 @@ for val in $threads; do
         echo -e "${RED}Restart: $val - Not activated${NC}"
         restarted_threads+=("$val - Not activated after 30 hours")
         ((numberRestarted+=1))
-    elif [ "$lastblock" -lt "$block" ]; then 
+    elif [ "$lastblock" -le "$block" ]; then 
         sudo docker restart $val
         echo -e "${RED}Restart: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
         restarted_threads+=("$val - Missing $(($currentblock - $lastblock)) blocks")
