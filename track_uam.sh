@@ -28,6 +28,9 @@ response=$(curl -s http://ip-api.com/json)
 # Extract ISP and Org using grep and sed
 ISP=$(echo "$response" | grep -oP '"isp":\s*"\K[^"]+')
 ORG=$(echo "$response" | grep -oP '"org":\s*"\K[^"]+')
+REGION=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
+CITY=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
+COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
 
 # Retry parameters
 max_retries=30
@@ -109,5 +112,5 @@ if [ ${#restarted_threads[@]} -gt 0 ]; then
     for thread in "${restarted_threads[@]}"; do
         thread_list+="- $thread%0A"
     done
-    send_telegram_notification "$nowDate%0A%0AIP: [$PUBLIC_IP](http://ip-api.com/json/$PUBLIC_IP)%0AISP: $ISP%0AORG: $ORG%0ACURRENT BLOCK: $currentblock%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
+    send_telegram_notification "$nowDate%0A%0AIP: [$PUBLIC_IP](http://ip-api.com/json/$PUBLIC_IP)%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0ACURRENT BLOCK: $currentblock%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
 fi
