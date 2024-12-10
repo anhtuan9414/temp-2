@@ -115,14 +115,15 @@ done
 
 if [ ${#restarted_threads[@]} -gt 0 ]; then
 
+    echo "Starting the reinstallation of threads..."
     file_name=$totalThreads-docker-compose.yml
     sudo rm -rf entrypoint.sh
     sudo rm -rf $file_name
-    wget https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/$file_name
-    wget https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/entrypoint.sh
+    wget -q https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/$file_name
+    wget -q https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/entrypoint.sh
     sudo PBKEY=$PBKEY docker-compose -f $file_name up -d
     
-    echo -e "${GREEN}Reinstalled ${numberRestarted} threads successfully${NC}"
+    echo -e "${GREEN}Reinstalled ${numberRestarted} threads successfully!${NC}"
 
     thread_list=""
     for thread in "${restarted_threads[@]}"; do
