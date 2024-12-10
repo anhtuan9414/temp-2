@@ -73,12 +73,14 @@ echo "Total threads: $totalThreads"
 allthreads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=debian:bullseye-slim | awk -F\| '{print $1}')
 
 restarted_threads=()
+numberRestarted=0
 
 for val in $allthreads; do 
     if [ $(docker logs $val --tail 200 2>&1 | grep -i "Error! System clock seems incorrect" | wc -l) -eq 1 ]; then 
         sudo docker restart $val
         echo -e "${RED}Restart: $val - Error! System clock seems incorrect${NC}"
         restarted_threads+=("%0A - $val - Error! System clock seems incorrect")
+        ((numberRestarted+=1))
     fi
 done
 
@@ -91,15 +93,17 @@ for val in $threads; do
         sudo docker restart $val
         echo -e "${RED}Restart: $val - Not activated${NC}"
         restarted_threads+=("%0A - $val - Not activated after 30 hours")
+        ((numberRestarted+=1))
     elif [ "$lastblock" -lt "$block" ]; then 
         sudo docker restart $val
         echo -e "${RED}Restart: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
         restarted_threads+=("%0A - $val - Missing $(($currentblock - $lastblock)) blocks")
+        ((numberRestarted+=1))
     else 
         echo -e "${GREEN}Passed${NC}"
     fi
 done
 
 if [ ${#restarted_threads[@]} -gt 0 ]; then
-    send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $restarted_threads"
+    send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted $restarted_threads"
 fi
