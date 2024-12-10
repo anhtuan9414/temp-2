@@ -27,7 +27,7 @@ while [ $retry_count -lt $max_retries ]; do
         break
     else
         retry_count=$((retry_count + 1))
-        echo "Attempt $retry_count/$max_retries failed to fetch current block. Retrying in 5 seconds..."
+        echo "Attempt $retry_count/$max_retries failed to fetch current block. Retrying in 10 seconds..."
         sleep 10
     fi
 done
