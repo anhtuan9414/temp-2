@@ -59,7 +59,7 @@ done
 
 if [ -z "$currentblock" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
-    send_telegram_notification "VPS IP: $PUBLIC_IP%0AFailed to fetch the current block after $max_retries attempts."
+    send_telegram_notification "IP: $PUBLIC_IP%0AFailed to fetch the current block after $max_retries attempts."
     exit 1
 fi
 
