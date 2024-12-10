@@ -32,7 +32,7 @@ while [ $retry_count -lt $max_retries ]; do
     fi
 done
 
-if [ -n "$currentblock" ]; then
+if [ -z "$currentblock" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
     exit 1
 fi
