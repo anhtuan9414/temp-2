@@ -7,7 +7,7 @@ max_retries=10
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
-    currentblock=$(curl 'https://utopian.is/api/explorer/blocks/get' \
+    currentblock=$(curl 'https://utopian.is/api/explorer/blocks/get?min=0&max=1&limit=1' \
       -H 'accept: application/json, text/javascript, */*; q=0.01' \
       -H 'accept-language: en-US,en;q=0.9,vi;q=0.8' \
       -H 'cookie: _pk_id.1.ef23=3dc49b029eda0ec0.1719399473.; _pk_ses.1.ef23=1; SL_G_WPT_TO=vi; SL_GWPT_Show_Hide_tmp=1; SL_wptGlobTipTmp=1; XSRF-TOKEN=eyJpdiI6Ijc4N0dsSHZMMFJEbWlrY3JhczZrbXc9PSIsInZhbHVlIjoic0lab0FZVWgzWldjZWhtS1A0cmhPM2RWYXNuQUxHQlVMdWwzL256dHlDejF1ZUVYQXVzcmIrOTl0NVRrRXNvbHZzOEdKeG5KLzZoTUlsNXJ1bzJvNDRxZzFsc3BtNGhWL0l2MmQxRkhMRFNNU2RuaXpYTGNuWm1wc3U4dXhIZ2EiLCJtYWMiOiJhMGExYmI2YzZkZTRiZDFjOWMxZTc2MjcwYmI3NzBkODE1MjUxMmFlY2E5ZDc1NWUzNzgzZmE4Yzg1MzU0MjcxIiwidGFnIjoiIn0%3D; utopian_session=eyJpdiI6InFDMUovUnpkRHdESk9OaS9nQjM0Qmc9PSIsInZhbHVlIjoieVJXbnNTY3VCT3l6OSthZXUwY2lXdU1hMDkrOE90N25HUk1DNUtvQTNIYUxOOE9aTlY0MmROZ3JYZVBkK045SWZNSUQxWFFzM3g4dHBGOFh2YmJNM09MbFgvUnlqL2l0RmJrMy9uRDRuU01SVjY0RjM1S0hkdlE5T1ZPNUpGSGUiLCJtYWMiOiJiZWRkYTAyNDA5OWM1NmRiNzk3NWJjNGIzNTQzMzYwMjNjMjk0OTkyMWQ4ZDAwNjhmNGYyOWU0YjU5MWE3MGVlIiwidGFnIjoiIn0%3D' \
