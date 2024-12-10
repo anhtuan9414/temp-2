@@ -80,8 +80,10 @@ numberRestarted=0
 
 for val in $allthreads; do 
     if [ $(docker logs $val --tail 200 2>&1 | grep -i "Error! System clock seems incorrect" | wc -l) -eq 1 ]; then 
-        sudo docker restart $val
-        echo -e "${RED}Restart: $val - Error! System clock seems incorrect${NC}"
+        #sudo docker restart $val
+        #echo -e "${RED}Restart: $val - Error! System clock seems incorrect${NC}"
+        sudo docker rm -f $val
+        echo -e "${RED}Remove: $val - Error! System clock seems incorrect${NC}"
         restarted_threads+=("$val - Error! System clock seems incorrect")
         ((numberRestarted+=1))
     fi
@@ -93,13 +95,17 @@ for val in $threads; do
     lastblock=$(docker logs $val --tail 200 | awk '/Processed block/ {block=$NF} END {print block}')
     echo "Last block of $val: $lastblock"
     if [ -z "$lastblock" ]; then 
-        sudo docker restart $val
-        echo -e "${RED}Restart: $val - Not activated${NC}"
+        #sudo docker restart $val
+        #echo -e "${RED}Restart: $val - Not activated${NC}"
+        sudo docker rm -f $val
+        echo -e "${RED}Remove: $val - Not activated${NC}"
         restarted_threads+=("$val - Not activated after 30 hours")
         ((numberRestarted+=1))
     elif [ "$lastblock" -le "$block" ]; then 
-        sudo docker restart $val
-        echo -e "${RED}Restart: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
+        #sudo docker restart $val
+        #echo -e "${RED}Restart: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
+        sudo docker rm -f $val
+        echo -e "${RED}Remove: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
         restarted_threads+=("$val - Last Block $lastblock - Missing $(($currentblock - $lastblock)) blocks")
         ((numberRestarted+=1))
     else 
@@ -108,9 +114,18 @@ for val in $threads; do
 done
 
 if [ ${#restarted_threads[@]} -gt 0 ]; then
+
+    file_name=$totalThreads-docker-compose.yml
+    sudo rm -rf entrypoint.sh
+    sudo rm -rf $file_name
+    wget https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/$file_name
+    wget https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/entrypoint.sh
+    sudo PBKEY=$PBKEY docker-compose -f $file_name up -d
+    
     thread_list=""
     for thread in "${restarted_threads[@]}"; do
         thread_list+="- $thread%0A"
     done
-    send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
+    
+    send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
 fi
