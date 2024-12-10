@@ -122,6 +122,8 @@ if [ ${#restarted_threads[@]} -gt 0 ]; then
     wget https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/entrypoint.sh
     sudo PBKEY=$PBKEY docker-compose -f $file_name up -d
     
+    echo -e "${GREEN}Reinstalled ${numberRestarted} threads successfully${NC}"
+
     thread_list=""
     for thread in "${restarted_threads[@]}"; do
         thread_list+="- $thread%0A"
