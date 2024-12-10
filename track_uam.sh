@@ -97,7 +97,7 @@ for val in $threads; do
     elif [ "$lastblock" -le "$block" ]; then 
         sudo docker restart $val
         echo -e "${RED}Restart: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
-        restarted_threads+=("$val - Missing $(($currentblock - $lastblock)) blocks")
+        restarted_threads+=("$val - Last Block $lastblock - Missing $(($currentblock - $lastblock)) blocks")
         ((numberRestarted+=1))
     else 
         echo -e "${GREEN}Passed${NC}"
