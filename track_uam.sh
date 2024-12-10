@@ -107,7 +107,7 @@ done
 if [ ${#restarted_threads[@]} -gt 0 ]; then
     thread_list=""
     for thread in "${restarted_threads[@]}"; do
-        thread_list+="+ $thread%0A"
+        thread_list+="- $thread%0A"
     done
     send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
 fi
