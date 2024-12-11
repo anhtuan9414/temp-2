@@ -137,7 +137,7 @@ download_file() {
     done
 
     echo "Failed to download $file_name after $max_retries attempts."
-	send_telegram_notification "WARRING!!!%0A$nowDate%0A%0AFailed to download $file_name after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0AFailed to download $file_name after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
     exit 1
 }
 
