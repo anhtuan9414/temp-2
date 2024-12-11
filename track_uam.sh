@@ -68,7 +68,7 @@ echo "Disk Usage (Root): $disk_usage"
 
 if [ -z "$PBKEY" ]; then
     echo "PBKEY empty"
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY empty!"
+    send_telegram_notification "$nowDate%0A%0APBKEY WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY EMPTY!"
     exit 1
 fi
 
@@ -103,7 +103,7 @@ done
 
 if [ -z "$currentblock" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0AFailed to fetch the current block after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0AFETCH BLOCK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0A%0AFailed to fetch the current block after $max_retries attempts."
     exit 1
 fi
 
@@ -131,7 +131,7 @@ if [ "$totalThreads" -le 1 ]; then
              reinstallUAM=1
        fi
     fi
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0ASet total threads from $oldTotalThreads to $totalThreads!"
+    send_telegram_notification "$nowDate%0A%0ALOW THREAD UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0A%0AIncreased the number of threads: $oldTotalThreads -> $totalThreads."
 fi
 
 echo "PBKEY: $PBKEY"
@@ -200,7 +200,7 @@ download_file() {
     done
 
     echo "Failed to download $file_name after $max_retries attempts."
-    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0AFailed to download $file_name after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    send_telegram_notification "$nowDate%0A%0ADOWNLOAD WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted%0A%0AFailed to download $file_name after $max_retries attempts."
     exit 1
 }
 
@@ -226,7 +226,7 @@ run_docker_compose_with_retry() {
     done
 
     echo "docker-compose up failed after $max_retries attempts."
-    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    send_telegram_notification "$nowDate%0A%0ADOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts."
     exit 1
 }
 
