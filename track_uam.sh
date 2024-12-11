@@ -39,9 +39,36 @@ REGION=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
 CITY=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
 COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
 
+os_name=$(lsb_release -d 2>/dev/null | awk -F'\t' '{print $2}' || echo "OS info not available")
+
+# Get total CPU cores
+cpu_cores=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
+
+# Get average CPU load (1-minute average) as percentage
+cpu_load=$(awk '{print $1 * 100}' /proc/loadavg)
+
+# Get total RAM in MB
+total_ram=$(grep MemTotal /proc/meminfo | awk '{printf "%.2f", $2 / 1024}')
+
+# Get available RAM in MB
+available_ram=$(grep MemAvailable /proc/meminfo | awk '{printf "%.2f", $2 / 1024}')
+
+# Get Disk usage
+disk_usage=$(df -h / | awk 'NR==2 {print $5}')
+
+# Display the results
+echo "System Information for VPS:"
+echo "----------------------------"
+echo "OS: $os_name"
+echo "Total CPU Cores: $cpu_cores"
+echo "CPU Load (1-minute average): $cpu_load%"
+echo "Total RAM: $total_ram MB"
+echo "Available RAM: $available_ram MB"
+echo "Disk Usage (Root): $disk_usage"
+
 if [ -z "$PBKEY" ]; then
     echo "PBKEY empty"
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0APBKEY empty!"
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY empty!"
     exit 1
 fi
 
@@ -75,7 +102,7 @@ done
 
 if [ -z "$currentblock" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AFailed to fetch the current block after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0AFailed to fetch the current block after $max_retries attempts."
     exit 1
 fi
 
@@ -100,7 +127,7 @@ if [ "$totalThreads" -le 1 ]; then
              totalThreads=12
        fi
     fi
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0APBKEY: $PBKEY%0ASet total threads from $oldTotalThreads to $totalThreads!"
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0ASet total threads from $oldTotalThreads to $totalThreads!"
 fi
 
 echo "PBKEY: $PBKEY"
@@ -169,7 +196,7 @@ download_file() {
     done
 
     echo "Failed to download $file_name after $max_retries attempts."
-    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0AFailed to download $file_name after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0AFailed to download $file_name after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
     exit 1
 }
 
@@ -195,7 +222,7 @@ run_docker_compose_with_retry() {
     done
 
     echo "docker-compose up failed after $max_retries attempts."
-    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
     exit 1
 }
 
@@ -214,5 +241,5 @@ if [ ${#restarted_threads[@]} -gt 0 ]; then
         thread_list+="- $thread%0A"
     done
     
-    send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
+    send_telegram_notification "$nowDate%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0ARESTARTED THREADS: $numberRestarted%0A$thread_list"
 fi
