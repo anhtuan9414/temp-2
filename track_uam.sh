@@ -2,6 +2,13 @@
 nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
 echo $nowDate
 
+sudo chmod 666 /var/run/docker.sock
+PBKEY=$(docker exec uam_1 printenv PBKEY)
+
+if [ -z "$PBKEY" ]; then
+    PBKEY=$(docker exec uam_2 printenv PBKEY)
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -31,6 +38,12 @@ ORG=$(echo "$response" | grep -oP '"org":\s*"\K[^"]+')
 REGION=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
 CITY=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
 COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
+
+if [ -z "$PBKEY" ]; then
+    echo "PBKEY empty"
+    send_telegram_notification "WARRING!!!IP: $PUBLIC_IP%0APBKEY empty!"
+    exit 1
+fi
 
 # Retry parameters
 max_retries=30
@@ -68,8 +81,6 @@ fi
 
 echo -e "${GREEN}Current Block: $currentblock${NC}"
 block=$((currentblock - 10))
-sudo chmod 666 /var/run/docker.sock
-PBKEY=$(docker exec uam_1 printenv PBKEY)
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
 echo "PBKEY: $PBKEY"
 echo "Total threads: $totalThreads"
