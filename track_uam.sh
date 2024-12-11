@@ -161,8 +161,8 @@ for val in $threads; do
         #sudo docker restart $val
         #echo -e "${RED}Restart: $val - Not activated${NC}"
         sudo docker rm -f $val
-        echo -e "${RED}Remove: $val - Not activated after 40 hours${NC}"
-        restarted_threads+=("$val - Not activated after 40 hours")
+        echo -e "${RED}Remove: $val - Not activated after 35 hours${NC}"
+        restarted_threads+=("$val - Not activated after 35 hours")
         ((numberRestarted+=1))
     elif [ "$lastblock" -le "$block" ]; then 
         #sudo docker restart $val
