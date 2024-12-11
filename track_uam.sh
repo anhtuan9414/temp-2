@@ -66,6 +66,12 @@ echo "Total RAM: $total_ram MB"
 echo "Available RAM: $available_ram MB"
 echo "Disk Usage (Root): $disk_usage"
 
+if [ "$available_ram" -le 500 ]; then
+    echo "LOW AVAILABLE RAM WARNING!!!"
+    send_telegram_notification "$nowDate%0A%0ALOW AVAILABLE RAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
+    exit 1
+fi
+
 if [ -z "$PBKEY" ]; then
     echo "PBKEY empty"
     send_telegram_notification "$nowDate%0A%0APBKEY WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY EMPTY!"
