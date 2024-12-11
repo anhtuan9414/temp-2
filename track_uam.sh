@@ -141,13 +141,39 @@ download_file() {
     exit 1
 }
 
+run_docker_compose_with_retry() {
+    local pbkey=$1
+    local file_name=$2
+    local max_retries=100
+    local wait_seconds=5
+    local retry_count=0
+
+    while [ $retry_count -lt $max_retries ]; do
+    
+        PBKEY=$pbkey docker-compose -f "$file_name" up -d --no-recreate
+        
+        if [ $? -eq 0 ]; then
+            return 0
+        else
+            echo "docker-compose up failed. Retrying in $wait_seconds seconds..."
+            retry_count=$((retry_count + 1))
+            echo "Retrying docker-compose with PBKEY=$PBKEY and file $file_name (Attempt $retry_count/$max_retries)..."
+            sleep $wait_seconds
+        fi
+    done
+
+    echo "docker-compose up failed after $max_retries attempts."
+    send_telegram_notification "WARRING!!!%0A$nowDate%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    exit 1
+}
+
 if [ ${#restarted_threads[@]} -gt 0 ]; then
 
     echo "Starting the reinstallation of threads..."
     file_name=$totalThreads-docker-compose.yml
     download_file $file_name
     download_file "entrypoint.sh"
-    PBKEY=$PBKEY docker-compose -f $file_name up -d --no-recreate
+    run_docker_compose_with_retry "$PBKEY" "$file_name"
     
     echo -e "${GREEN}Reinstalled ${numberRestarted} threads successfully!${NC}"
 
