@@ -75,6 +75,7 @@ fi
 # Retry parameters
 max_retries=30
 retry_count=0
+reinstallUAM=0
 
 while [ $retry_count -lt $max_retries ]; do
     currentblock=$(curl -s 'https://utopian.is/api/explorer/blocks/get' \
@@ -117,14 +118,17 @@ if [ "$totalThreads" -le 1 ]; then
     if [ "$cpu_cores" -le 8 ]; then
         echo "Set totalThreads=2"
         totalThreads=2
+        reinstallUAM=1
     else
        if [ "$cpu_cores" -eq 16 ]; then
              echo "Set totalThreads=5"
              totalThreads=5
+             reinstallUAM=1
        fi
        if [ "$cpu_cores" -eq 48 ]; then
              echo "Set totalThreads=12"
              totalThreads=12
+             reinstallUAM=1
        fi
     fi
     send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ASystem Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0APBKEY: $PBKEY%0ASet total threads from $oldTotalThreads to $totalThreads!"
@@ -226,16 +230,22 @@ run_docker_compose_with_retry() {
     exit 1
 }
 
-if [ ${#restarted_threads[@]} -gt 0 ]; then
-
+install_uam() {
+    local total_threads=$1
+    local pbkey=$2
+    local file_name=$total_threads-docker-compose.yml
     echo "Starting the reinstallation of threads..."
-    file_name=$totalThreads-docker-compose.yml
     download_file $file_name
     download_file "entrypoint.sh"
-    run_docker_compose_with_retry "$PBKEY" "$file_name"
-    
-    echo -e "${GREEN}Reinstalled ${numberRestarted} threads successfully!${NC}"
+    run_docker_compose_with_retry "$pbkey" "$file_name"
+    echo -e "${GREEN}Installed ${total_threads} threads successfully!${NC}"
+}
 
+if [ "$reinstallUAM" -eq 1 ] || [ ${#restarted_threads[@]} -gt 0 ]; then
+    install_uam $totalThreads $PBKEY
+fi
+
+if [ ${#restarted_threads[@]} -gt 0 ]; then
     thread_list=""
     for thread in "${restarted_threads[@]}"; do
         thread_list+="- $thread%0A"
