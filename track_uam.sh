@@ -84,7 +84,7 @@ block=$((currentblock - 10))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
 
 if [ "$totalThreads" -le 1 ]; then
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ATotal threads: $totalThreads!"
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0APBKEY: $PBKEY%0ATotal threads: $totalThreads!"
 fi
 
 echo "PBKEY: $PBKEY"
