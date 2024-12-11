@@ -113,14 +113,40 @@ for val in $threads; do
     fi
 done
 
+# Function to download a file with retries
+download_file() {
+    local file_name=$1
+    local url="https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/$file_name"
+    local output=$file_name
+    local wait_seconds=5
+    local retry_count=0
+    local max_retries=100
+
+    while [ $retry_count -lt $max_retries ]; do
+        echo "Attempting to download $file_name from $url (Attempt $((retry_count + 1))/$max_retries)..."
+        wget --no-check-certificate -q "$url" -O "$output"
+
+        if [ $? -eq 0 ]; then
+            echo "Download successful: $file_name saved as $output."
+            return 0
+        else
+            retry_count=$((retry_count + 1))
+            echo "Download failed. Retrying in $wait_seconds seconds..."
+            sleep $wait_seconds
+        fi
+    done
+
+    echo "Failed to download $file_name after $max_retries attempts."
+	send_telegram_notification "WARRING!!!%0A$nowDate%0A%0AFailed to download $file_name after $max_retries attempts.%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ACURRENT BLOCK: $currentblock%0APBKEY: $PBKEY%0ATOTAL THREADS: $totalThreads%0AREMOVED THREADS: $numberRestarted"
+    exit 1
+}
+
 if [ ${#restarted_threads[@]} -gt 0 ]; then
 
     echo "Starting the reinstallation of threads..."
     file_name=$totalThreads-docker-compose.yml
-    sudo rm -rf entrypoint.sh
-    sudo rm -rf $file_name
-    wget --no-check-certificate -q https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/$file_name
-    wget --no-check-certificate -q https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/entrypoint.sh
+    download_file $file_name
+    download_file "entrypoint.sh"
     PBKEY=$PBKEY docker-compose -f $file_name up -d --no-recreate
     
     echo -e "${GREEN}Reinstalled ${numberRestarted} threads successfully!${NC}"
