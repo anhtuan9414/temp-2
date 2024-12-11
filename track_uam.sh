@@ -123,7 +123,6 @@ download_file() {
     local max_retries=180
 
     while [ $retry_count -lt $max_retries ]; do
-        echo "Attempting to download $file_name from $url (Attempt $((retry_count + 1))/$max_retries)..."
         wget --no-check-certificate -q "$url" -O "$output"
 
         if [ $? -eq 0 ]; then
@@ -132,6 +131,7 @@ download_file() {
         else
             retry_count=$((retry_count + 1))
             echo "Download failed. Retrying in $wait_seconds seconds..."
+            echo "Attempting to download $file_name from $url (Attempt $((retry_count + 1))/$max_retries)..."
             sleep $wait_seconds
         fi
     done
