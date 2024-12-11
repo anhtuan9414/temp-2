@@ -131,7 +131,7 @@ download_file() {
         else
             retry_count=$((retry_count + 1))
             echo "Download failed. Retrying in $wait_seconds seconds..."
-            echo "Attempting to download $file_name from $url (Attempt $((retry_count + 1))/$max_retries)..."
+            echo "Retrying to download $file_name from $url (Attempt $retry_count/$max_retries)..."
             sleep $wait_seconds
         fi
     done
