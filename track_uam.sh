@@ -41,7 +41,7 @@ COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
 
 if [ -z "$PBKEY" ]; then
     echo "PBKEY empty"
-    send_telegram_notification "WARRING!!!IP: $PUBLIC_IP%0APBKEY empty!"
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0APBKEY empty!"
     exit 1
 fi
 
@@ -75,13 +75,18 @@ done
 
 if [ -z "$currentblock" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
-    send_telegram_notification "IP: $PUBLIC_IP%0AFailed to fetch the current block after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AFailed to fetch the current block after $max_retries attempts."
     exit 1
 fi
 
 echo -e "${GREEN}Current Block: $currentblock${NC}"
 block=$((currentblock - 10))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
+
+if [ "$totalThreads" -le 1 ]; then
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0ATotal threads: $totalThreads!"
+fi
+
 echo "PBKEY: $PBKEY"
 echo "Total threads: $totalThreads"
 allthreads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=debian:bullseye-slim | awk -F\| '{print $1}')
