@@ -84,7 +84,23 @@ block=$((currentblock - 10))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
 
 if [ "$totalThreads" -le 1 ]; then
-    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0APBKEY: $PBKEY%0ATotal threads: $totalThreads!"
+    oldTotalThreads=$totalThreads
+    cpu_cores=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
+    echo "CPU Cores: $cpu_cores"
+    if [ "$cpu_cores" -le 8 ]; then
+        echo "Set totalThreads=2"
+        totalThreads=2
+    else
+       if [ "$cpu_cores" -eq 16 ]; then
+             echo "Set totalThreads=5"
+             totalThreads=5
+       fi
+       if [ "$cpu_cores" -eq 48 ]; then
+             echo "Set totalThreads=12"
+             totalThreads=12
+       fi
+    fi
+    send_telegram_notification "$nowDate%0A%0AWARRING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0APBKEY: $PBKEY%0ASet total threads from $oldTotalThreads to $totalThreads!"
 fi
 
 echo "PBKEY: $PBKEY"
