@@ -120,7 +120,7 @@ download_file() {
     local output=$file_name
     local wait_seconds=5
     local retry_count=0
-    local max_retries=100
+    local max_retries=180
 
     while [ $retry_count -lt $max_retries ]; do
         echo "Attempting to download $file_name from $url (Attempt $((retry_count + 1))/$max_retries)..."
