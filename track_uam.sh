@@ -120,7 +120,7 @@ download_file() {
     local output=$file_name
     local wait_seconds=5
     local retry_count=0
-    local max_retries=120
+    local max_retries=100
 
     while [ $retry_count -lt $max_retries ]; do
         wget --no-check-certificate -q "$url" -O "$output"
@@ -145,7 +145,7 @@ run_docker_compose_with_retry() {
     local pbkey=$1
     local file_name=$2
     local max_retries=100
-    local wait_seconds=5
+    local wait_seconds=10
     local retry_count=0
 
     while [ $retry_count -lt $max_retries ]; do
