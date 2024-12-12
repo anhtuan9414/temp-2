@@ -5,11 +5,21 @@ echo $nowDate
 sudo chmod 666 /var/run/docker.sock
 docker rm -f $(docker ps -aq --filter ancestor=earnfm/earnfm-client:latest)
 docker rm -f $(docker ps -aq --filter ancestor=proxylite/proxyservice:latest)
-PBKEY=$(docker exec uam_1 printenv PBKEY)
 
-if [ -z "$PBKEY" ]; then
-    PBKEY=$(docker exec uam_2 printenv PBKEY)
-fi
+PBKEY=""
+
+# List of containers to try
+containers=("uam_1" "uam_2" "uam_3" "uam_4" "uam_5")
+
+for container in "${containers[@]}"; do
+    PBKEY=$(docker exec "$container" printenv PBKEY 2>/dev/null)
+    
+    if [ -n "$PBKEY" ]; then
+        break
+    else
+        echo "PBKEY not found in $container, trying next..."
+    fi
+done
 
 # Colors for output
 RED='\033[0;31m'
