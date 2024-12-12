@@ -3,6 +3,30 @@ nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
 echo $nowDate
 
 sudo chmod 666 /var/run/docker.sock
+
+
+MEMORY_LIMIT=50
+
+# Get a list of containers running the repocket/repocket:latest image
+containers=$(docker ps --filter "ancestor=repocket/repocket:latest" --format "{{.ID}}")
+
+if [ -z "$containers" ]; then
+    for container in $containers; do
+        # Get memory usage of the container in MiB
+        memory_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container | awk '{print $1}' | sed 's/MiB//')
+        
+        # Check if memory usage is greater than the limit
+        if [ "$(echo "$memory_usage > $MEMORY_LIMIT" | bc)" -eq 1 ]; then
+            echo "Container $container exceeds memory limit (${memory_usage}MiB > ${MEMORY_LIMIT}MiB). Deleting..."
+            docker stop $container && docker rm $container
+            docker run -e RP_EMAIL=kojinyoji@gmail.com -e RP_API_KEY=c5224291-4fdd-4c86-8ee5-3b4ff35d78c1 -d --restart=always --memory=50mb repocket/repocket:latest
+        else
+            echo "Container $container is within memory limit (${memory_usage}MiB)."
+        fi
+    done
+fi
+
+
 PBKEY=""
 # Colors for output
 RED='\033[0;31m'
