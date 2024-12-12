@@ -124,26 +124,26 @@ block=$((currentblock - 10))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
 oldTotalThreads=$totalThreads
 
-if [["$cpu_cores" -le 8 && $totalThreads -lt 2 ]]; then
+if [[ $cpu_cores -le 8 && $totalThreads -lt 2 ]]; then
     echo "Set totalThreads=2"
     totalThreads=2
     setNewThreadUAM=1
 fi
 
-if [["$cpu_cores" -eq 16 && $totalThreads -lt 5 ]]; then
-    echo "Set totalThreads=2"
+if [[ $cpu_cores -eq 16 && $totalThreads -lt 5 ]]; then
+    echo "Set totalThreads=5"
     totalThreads=5
     setNewThreadUAM=1
 fi
 
-if [["$cpu_cores" -eq 48 && $totalThreads -lt 12 ]]; then
-    echo "Set totalThreads=2"
+if [[ $cpu_cores -eq 48 && $totalThreads -lt 12 ]]; then
+    echo "Set totalThreads=12"
     totalThreads=12
     setNewThreadUAM=1
 fi
 
-if [["$cpu_cores" -eq 256 && $totalThreads -lt 55 ]]; then
-    echo "Set totalThreads=2"
+if [[ $cpu_cores -eq 256 && $totalThreads -lt 55 ]]; then
+    echo "Set totalThreads=55"
     totalThreads=55
     setNewThreadUAM=1
 fi
