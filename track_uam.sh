@@ -67,18 +67,18 @@ response=$(curl -s http://ip-api.com/json)
 
 # Extract ISP and Org using grep and sed
 ISP=$(echo "$response" | grep -oP '"isp":\s*"\K[^"]+')
-Org=$(echo "$response" | grep -oP '"org":\s*"\K[^"]+')
-Region=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
-City=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
-Country=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
+ORG=$(echo "$response" | grep -oP '"org":\s*"\K[^"]+')
+REGION=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
+CITY=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
+COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
 
 # Display the results
 echo "----------------------------"
 echo "ISP: $ISP"
-echo "Org: $Org"
-echo "Region: $Region"
-echo "City: $City"
-echo "Country: $Country"
+echo "Org: $ORG"
+echo "Region: $REGION"
+echo "City: $CITY"
+echo "Country: $COUNTRY"
 echo "----------------------------"
 
 os_name=$(lsb_release -d 2>/dev/null | awk -F'\t' '{print $2}' || echo "OS info not available")
