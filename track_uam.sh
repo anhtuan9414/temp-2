@@ -10,7 +10,7 @@ MEMORY_LIMIT=50
 # Get a list of containers running the repocket/repocket:latest image
 containers=$(docker ps --filter "ancestor=repocket/repocket:latest" --format "{{.ID}}")
 
-if [ -z "$containers" ]; then
+if [ -n "$containers" ]; then
     for container in $containers; do
         # Get memory usage of the container in MiB
         memory_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container | awk '{print $1}' | sed 's/MiB//')
