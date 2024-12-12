@@ -184,17 +184,17 @@ for val in $threads; do
     echo "Last block of $val: $lastblock"
     if [ -z "$lastblock" ]; then 
         #sudo docker restart $val
-        #echo -e "${RED}Restart: $val - Not activated${NC}"
+        #echo -e "${RED}Restart: $val -Not activated after 35 hours${NC}"
         sudo docker rm -f $val
         echo -e "${RED}Remove: $val - Not activated after 35 hours${NC}"
         restarted_threads+=("$val - Not activated after 35 hours")
         ((numberRestarted+=1))
     elif [ "$lastblock" -le "$block" ]; then 
         #sudo docker restart $val
-        #echo -e "${RED}Restart: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
+        #echo -e "${RED}Restart: $val - Missed: $(($currentblock - $lastblock)) blocks${NC}"
         sudo docker rm -f $val
-        echo -e "${RED}Remove: $val - Missing $(($currentblock - $lastblock)) blocks${NC}"
-        restarted_threads+=("$val - Last Block $lastblock - Missing $(($currentblock - $lastblock)) blocks")
+        echo -e "${RED}Remove: $val - Missed: $(($currentblock - $lastblock)) blocks${NC}"
+        restarted_threads+=("$val - Last Block: $lastblock - Missed: $(($currentblock - $lastblock)) blocks")
         ((numberRestarted+=1))
     else 
         echo -e "${GREEN}Passed${NC}"
