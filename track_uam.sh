@@ -72,6 +72,15 @@ Region=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
 City=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
 Country=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
 
+# Display the results
+echo "----------------------------"
+echo "ISP: $ISP"
+echo "Org: $Org"
+echo "Region: $Region"
+echo "City: $City"
+echo "Country: $Country"
+echo "----------------------------"
+
 os_name=$(lsb_release -d 2>/dev/null | awk -F'\t' '{print $2}' || echo "OS info not available")
 
 # Get total CPU cores
