@@ -87,13 +87,15 @@ os_name=$(lsb_release -d 2>/dev/null | awk -F'\t' '{print $2}' || echo "OS info 
 cpu_cores=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
 
 # Get average CPU load (1-minute average) as percentage
-cpu_load=$(awk '{print $1 * 100}' /proc/loadavg)
+cpu_load=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
 
 # Get total RAM in MB
 total_ram=$(grep MemTotal /proc/meminfo | awk '{printf "%.2f", $2 / 1024}')
 
 # Get available RAM in MB
 available_ram=$(grep MemAvailable /proc/meminfo | awk '{printf "%.2f", $2 / 1024}')
+
+ram_usage=$(printf "%.1f" $(free | awk 'FNR == 2 {print $3/$2 * 100.0}'))
 
 # Get Disk usage
 disk_usage=$(df -h / | awk 'NR==2 {print $5}')
@@ -103,25 +105,26 @@ echo "System Information:"
 echo "----------------------------"
 echo "OS: $os_name"
 echo "Total CPU Cores: $cpu_cores"
-echo "CPU Load (1-minute average): $cpu_load%"
+echo "CPU Load: $cpu_load%"
 echo "Total RAM: $total_ram MB"
+echo "RAM Usage: $ram_usage%"
 echo "Available RAM: $available_ram MB"
 echo "Disk Usage (Root): $disk_usage"
 echo "----------------------------"
 
 if [ "${disk_usage%\%}" -ge 90 ]; then
     echo -e "${YELLOW}LOW AVAILABLE DISK WARNING!!!${NC}"
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW AVAILABLE DISK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW AVAILABLE DISK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
 fi
 
 if [ "$(echo "$available_ram" | awk '{print int($1 + 0.5)}')" -le 300 ]; then
     echo -e "${YELLOW}LOW AVAILABLE RAM WARNING!!!${NC}"
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW AVAILABLE RAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW AVAILABLE RAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
 fi
 
 if [ -z "$PBKEY" ]; then
     echo -e "${YELLOW}PBKEY EMPTY!!!${NC}"
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ PBKEY EMPTY WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ PBKEY EMPTY WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
     exit 1
 fi
 
@@ -156,7 +159,7 @@ done
 
 if [ -z "$currentblock" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ FETCH BLOCK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKey: $PBKEY%0A%0AFailed to fetch the current block after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ FETCH BLOCK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKey: $PBKEY%0A%0AFailed to fetch the current block after $max_retries attempts."
     exit 1
 fi
 
@@ -191,7 +194,7 @@ fi
 if [ "$setNewThreadUAM" -gt 0 ]; then
     echo -e "${YELLOW}LOW THREAD UAM WARNING!!!${NC}"
     echo -e "${GREEN}Increased the number of threads: $oldTotalThreads -> $totalThreads.${NC}"
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW THREAD UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKey: $PBKEY%0A%0AIncreased the number of threads: $oldTotalThreads -> $totalThreads."
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW THREAD UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKey: $PBKEY%0A%0AIncreased the number of threads: $oldTotalThreads -> $totalThreads."
 fi
 
 allthreads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=debian:bullseye-slim | awk -F\| '{print $1}')
@@ -258,7 +261,7 @@ download_file() {
     done
 
     echo "Failed to download $file_name after $max_retries attempts."
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOWNLOAD WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to download $file_name after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOWNLOAD WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to download $file_name after $max_retries attempts."
     exit 1
 }
 
@@ -284,7 +287,7 @@ run_docker_compose_with_retry() {
     done
 
     echo "docker-compose up failed after $max_retries attempts."
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0Adocker-compose up with PBKEY=$PBKEY and file $file_name failed after $max_retries attempts."
     exit 1
 }
 
@@ -309,5 +312,5 @@ if [ ${#restarted_threads[@]} -gt 0 ]; then
         thread_list+="🙏 $thread%0A"
     done
     
-    send_telegram_notification "$nowDate%0A%0A ⚠️ UAM RESTART ALERT!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A$thread_list"
+    send_telegram_notification "$nowDate%0A%0A ⚠️ UAM RESTART ALERT!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A$thread_list"
 fi
