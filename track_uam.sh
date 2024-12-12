@@ -66,7 +66,7 @@ available_ram=$(grep MemAvailable /proc/meminfo | awk '{printf "%.2f", $2 / 1024
 disk_usage=$(df -h / | awk 'NR==2 {print $5}')
 
 # Display the results
-echo "System Information for VPS:"
+echo "System Information:"
 echo "----------------------------"
 echo "OS: $os_name"
 echo "Total CPU Cores: $cpu_cores"
@@ -74,6 +74,7 @@ echo "CPU Load (1-minute average): $cpu_load%"
 echo "Total RAM: $total_ram MB"
 echo "Available RAM: $available_ram MB"
 echo "Disk Usage (Root): $disk_usage"
+echo "----------------------------"
 
 if [ "${disk_usage%\%}" -ge 90 ]; then
     echo "LOW AVAILABLE DISK WARNING!!!"
