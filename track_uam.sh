@@ -4,6 +4,11 @@ echo $nowDate
 
 sudo chmod 666 /var/run/docker.sock
 PBKEY=""
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
 
 # List of containers to try
 containers=("uam_1" "uam_2" "uam_3" "uam_4" "uam_5")
@@ -17,11 +22,6 @@ for container in "${containers[@]}"; do
         echo "PBKEY not found in $container, trying next..."
     fi
 done
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
 
 # Telegram Bot Configuration
 BOT_TOKEN="7542968763:AAHbgLT6_KEUvtMm1OY0_CW0o_zF3QSHoNo"
@@ -77,17 +77,17 @@ echo "Disk Usage (Root): $disk_usage"
 echo "----------------------------"
 
 if [ "${disk_usage%\%}" -ge 90 ]; then
-    echo "LOW AVAILABLE DISK WARNING!!!"
+    echo -e "${YELLOW}LOW AVAILABLE DISK WARNING!!!${NC}"
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW AVAILABLE DISK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
 fi
 
 if [ "$(echo "$available_ram" | awk '{print int($1 + 0.5)}')" -le 500 ]; then
-    echo "LOW AVAILABLE RAM WARNING!!!"
+    echo -e "${YELLOW}LOW AVAILABLE RAM WARNING!!!${NC}"
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW AVAILABLE RAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
 fi
 
 if [ -z "$PBKEY" ]; then
-    echo "PBKEY empty"
+    echo -e "${YELLOW}PBKEY EMPTY!!!${NC}"
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ PBKEY EMPTY WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage"
     exit 1
 fi
@@ -132,36 +132,35 @@ block=$((currentblock - 10))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
 oldTotalThreads=$totalThreads
 
+echo "PBKEY: $PBKEY"
+echo "Total threads: $totalThreads"
+
 if [[ $cpu_cores -le 8 && $totalThreads -lt 2 ]]; then
-    echo "Set totalThreads=2"
     totalThreads=2
     setNewThreadUAM=1
 fi
 
 if [[ $cpu_cores -eq 16 && $totalThreads -lt 5 ]]; then
-    echo "Set totalThreads=5"
     totalThreads=5
     setNewThreadUAM=1
 fi
 
 if [[ $cpu_cores -eq 48 && $totalThreads -lt 12 ]]; then
-    echo "Set totalThreads=12"
     totalThreads=12
     setNewThreadUAM=1
 fi
 
 if [[ $cpu_cores -eq 256 && $totalThreads -lt 55 ]]; then
-    echo "Set totalThreads=55"
     totalThreads=55
     setNewThreadUAM=1
 fi
 
 if [ "$setNewThreadUAM" -gt 0 ]; then
+    echo -e "${YELLOW}LOW THREAD UAM WARNING!!!${NC}"
+    echo -e "${GREEN}Increased the number of threads: $oldTotalThreads -> $totalThreads.${NC}"
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW THREAD UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKEY: $PBKEY%0A%0AIncreased the number of threads: $oldTotalThreads -> $totalThreads."
 fi
 
-echo "PBKEY: $PBKEY"
-echo "Total threads: $totalThreads"
 allthreads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=debian:bullseye-slim | awk -F\| '{print $1}')
 
 restarted_threads=()
