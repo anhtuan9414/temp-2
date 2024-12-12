@@ -161,7 +161,7 @@ if [ -z "$currentblock" ]; then
 fi
 
 echo -e "${GREEN}Current Block: $currentblock${NC}"
-block=$((currentblock - 10))
+block=$((currentblock - 15))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
 oldTotalThreads=$totalThreads
 
