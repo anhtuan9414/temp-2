@@ -87,7 +87,7 @@ fi
 # Retry parameters
 max_retries=30
 retry_count=0
-reinstallUAM=0
+setNewThreadUAM=0
 
 while [ $retry_count -lt $max_retries ]; do
     currentblock=$(curl -s 'https://utopian.is/api/explorer/blocks/get' \
@@ -122,27 +122,33 @@ fi
 echo -e "${GREEN}Current Block: $currentblock${NC}"
 block=$((currentblock - 10))
 totalThreads=$(docker ps | grep debian:bullseye-slim | wc -l)
+oldTotalThreads=$totalThreads
 
-if [ "$totalThreads" -le 1 ]; then
-    oldTotalThreads=$totalThreads
-    cpu_cores=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
-    echo "CPU Cores: $cpu_cores"
-    if [ "$cpu_cores" -le 8 ]; then
-        echo "Set totalThreads=2"
-        totalThreads=2
-        reinstallUAM=1
-    else
-       if [ "$cpu_cores" -eq 16 ]; then
-             echo "Set totalThreads=5"
-             totalThreads=5
-             reinstallUAM=1
-       fi
-       if [ "$cpu_cores" -eq 48 ]; then
-             echo "Set totalThreads=12"
-             totalThreads=12
-             reinstallUAM=1
-       fi
-    fi
+if [["$cpu_cores" -le 8 && $totalThreads -lt 2 ]]; then
+    echo "Set totalThreads=2"
+    totalThreads=2
+    setNewThreadUAM=1
+fi
+
+if [["$cpu_cores" -eq 16 && $totalThreads -lt 5 ]]; then
+    echo "Set totalThreads=2"
+    totalThreads=5
+    setNewThreadUAM=1
+fi
+
+if [["$cpu_cores" -eq 48 && $totalThreads -lt 12 ]]; then
+    echo "Set totalThreads=2"
+    totalThreads=12
+    setNewThreadUAM=1
+fi
+
+if [["$cpu_cores" -eq 256 && $totalThreads -lt 55 ]]; then
+    echo "Set totalThreads=2"
+    totalThreads=55
+    setNewThreadUAM=1
+fi
+
+if [ "$setNewThreadUAM" -gt 0 ]; then
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW THREAD UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AORG: $ORG%0ACOUNTRY: $COUNTRY%0AREGION: $REGION%0ACITY: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load (1-minute average): $cpu_load%%0ATotal RAM: $total_ram MB%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKEY: $PBKEY%0A%0AIncreased the number of threads: $oldTotalThreads -> $totalThreads."
 fi
 
@@ -253,7 +259,7 @@ install_uam() {
     echo -e "${GREEN}Installed ${total_threads} threads successfully!${NC}"
 }
 
-if [ "$reinstallUAM" -eq 1 ] || [ ${#restarted_threads[@]} -gt 0 ]; then
+if [ "$setNewThreadUAM" -gt 0 ] || [ ${#restarted_threads[@]} -gt 0 ]; then
     install_uam $totalThreads $PBKEY
 fi
 
