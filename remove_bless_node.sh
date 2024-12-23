@@ -27,12 +27,6 @@ HEADERS=(
   -H "Referrer-Policy: strict-origin-when-cross-origin"
 )
 
-# Fetch all nodes
-fetch_nodes() {
-  echo "Fetching nodes..."
-  response=$(curl -s -X GET "$BASE_URL" "${HEADERS[@]}")
-  echo "$response"
-}
 
 # Retire a node by pubKey
 retire_node() {
@@ -43,20 +37,40 @@ retire_node() {
     || echo "Failed to retire node $pubKey."
 }
 
-# Main function to filter and retire nodes
+# Fetch all nodes
 process_nodes() {
-  nodes=$(fetch_nodes)
+  echo "Fetching nodes..."
+  response=$(curl -s -X GET "$BASE_URL" "${HEADERS[@]}")
+  if [ -z "$response" ]; then
+    echo "No response received from $BASE_URL."
+    exit 1
+  else
+    # Count the number of nodes by counting the occurrences of curly braces
+    node_count=$(echo "$response" | grep -o '{' | wc -l)
+    echo "Number of nodes: $node_count"
+  # Initialize an empty array to store the pubKeys of nodes to retire
+  nodes_to_retire=()
 
-  # Filter for isConnected=false and isRetired=false manually
-  echo "$nodes" | tr -d '\n' | grep -oE '{[^}]+}' | while IFS= read -r node; do
+  # Filter nodes where isConnected=false and isRetired=false
+  echo "$response" | tr -d '\n' | grep -oE '{[^}]+}' | while IFS= read -r node; do
     isConnected=$(echo "$node" | grep -o '"isConnected":false')
     isRetired=$(echo "$node" | grep -o '"isRetired":false')
     pubKey=$(echo "$node" | grep -o '"pubKey":"[^"]*' | awk -F':' '{print $2}' | tr -d '"')
 
+    # Check if both conditions are true and if pubKey exists
     if [[ -n "$isConnected" && -n "$isRetired" && -n "$pubKey" ]]; then
-      retire_node "$pubKey"
+      # Add the pubKey to the nodes_to_retire array
+      nodes_to_retire+=("$pubKey")
     fi
   done
+  # Count the number of nodes in the nodes_to_retire array
+  nodes_to_retire_count=${#nodes_to_retire[@]}
+  echo "Number of nodes to retire: $nodes_to_retire_count"
+  # Loop through the list of nodes to retire and call retire_node for each
+  for pubKey in "${nodes_to_retire[@]}"; do
+    retire_node "$pubKey"
+  done
+  fi
 }
 
 # Run the script
