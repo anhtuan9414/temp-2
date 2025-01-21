@@ -171,8 +171,8 @@ oldTotalThreads=$totalThreads
 echo "PBKEY: $PBKEY"
 echo "Total Threads: $totalThreads"
 
-if [[ $cpu_cores -le 8 && $totalThreads -lt 2 ]]; then
-    totalThreads=2
+if [[ $cpu_cores -le 8 && $totalThreads -lt 1 ]]; then
+    totalThreads=1
     setNewThreadUAM=1
 fi
 
