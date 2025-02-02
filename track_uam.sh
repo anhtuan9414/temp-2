@@ -198,11 +198,6 @@ if [[ $cpu_cores -eq 48 && $totalThreads -lt 12 ]]; then
     setNewThreadUAM=1
 fi
 
-if [[ $cpu_cores -eq 256 && $totalThreads -lt 55 ]]; then
-    totalThreads=55
-    setNewThreadUAM=1
-fi
-
 if [ "$setNewThreadUAM" -gt 0 ]; then
     echo -e "${YELLOW}LOW THREAD UAM WARNING!!!${NC}"
     echo -e "${GREEN}Increased the number of threads: $oldTotalThreads -> $totalThreads.${NC}"
