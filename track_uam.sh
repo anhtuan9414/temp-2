@@ -43,7 +43,7 @@ send_telegram_notification() {
 PUBLIC_IP=$(curl -s ifconfig.me)
 
 # Fetch public IP and ISP info from ip-api
-max_ip_retries=10
+max_ip_retries=20
 ip_attempt=0
 
 while (( ip_attempt < max_ip_retries )); do
@@ -55,7 +55,7 @@ while (( ip_attempt < max_ip_retries )); do
 
     ((ip_attempt++))
     echo "Attempt $ip_attempt/$max_ip_retries failed. Retrying in 3 seconds..."
-    sleep 3
+    sleep 2
 done
 
 # Extract ISP and Org using grep and sed
