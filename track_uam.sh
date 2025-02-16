@@ -4,8 +4,8 @@ echo $nowDate
 
 sudo chmod 666 /var/run/docker.sock
 
-docker rm -f $(docker ps -aq --filter ancestor=repocket/repocket:latest)
-docker rm -f $(docker ps -aq --filter ancestor=kellphy/nodepay:latest)
+#docker rm -f $(docker ps -aq --filter ancestor=repocket/repocket:latest)
+#docker rm -f $(docker ps -aq --filter ancestor=kellphy/nodepay:latest)
 
 PBKEY=""
 # Colors for output
