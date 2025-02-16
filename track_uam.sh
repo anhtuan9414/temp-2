@@ -54,7 +54,7 @@ while (( ip_attempt < max_ip_retries )); do
     fi
 
     ((ip_attempt++))
-    echo "Attempt $ip_attempt/$max_ip_retries failed. Retrying in 3 seconds..."
+    echo "Attempt $ip_attempt/$max_ip_retries failed. Retrying in 2 seconds..."
     sleep 2
 done
 
@@ -247,7 +247,7 @@ download_file() {
     local file_name=$1
     local url="https://github.com/anhtuan9414/uam-docker/raw/master/uam-swarm/$file_name"
     local output=$file_name
-    local wait_seconds=5
+    local wait_seconds=3
     local retry_count=0
     local max_retries=100
 
