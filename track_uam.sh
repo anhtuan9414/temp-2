@@ -3,6 +3,19 @@ nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
 echo $nowDate
 
 sudo chmod 666 /var/run/docker.sock
+sudo iptables -F
+sudo iptables -A INPUT -p all -j ACCEPT
+sudo iptables -A FORWARD -p all -j ACCEPT
+sudo iptables -A OUTPUT -p all -j ACCEPT
+sudo iptables -A InstanceServices -p all -j ACCEPT
+net=ens3
+if ip link show ens3 >/dev/null 2>&1; then
+  echo "Interface ens3 exists."
+else
+  echo "Interface ens3 does not exist. Set is enp0s5"
+  net=enp0s5
+fi
+sudo iptables -t nat -I POSTROUTING -s 172.17.0.1 -j SNAT --to-source $(ip addr show $net | grep "inet " | grep -v 127.0.0.1|awk 'match($0, /(10.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0,RSTART,RLENGTH)}')
 
 #docker rm -f $(docker ps -aq --filter ancestor=repocket/repocket:latest)
 #docker rm -f $(docker ps -aq --filter ancestor=kellphy/nodepay:latest)
