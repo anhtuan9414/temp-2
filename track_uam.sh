@@ -2,6 +2,7 @@
 nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
 echo $nowDate
 
+sudo sed -ie 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1'/g /etc/sysctl.conf
 sudo chmod 666 /var/run/docker.sock
 sudo iptables -F
 sudo iptables -A INPUT -p all -j ACCEPT
