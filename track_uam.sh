@@ -79,6 +79,10 @@ REGION=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
 CITY=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
 COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
 
+if [ -z "$PUBLIC_IP" ]; then
+    PUBLIC_IP=$(echo "$response" | grep -oP '"query":\s*"\K[^"]+')
+fi
+
 # Display the results
 echo "----------------------------"
 echo "ISP: $ISP"
