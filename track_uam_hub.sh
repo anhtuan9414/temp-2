@@ -15,7 +15,7 @@ YELLOW='\033[0;33m'
 NC='\033[0m'
 
 # List of containers to try
-containers=("uam" "uam_1" "uam_2" "uam_3" "uam_4" "uam_5")
+containers=("uam_1" "uam_2" "uam_3" "uam_4" "uam_5" "uam")
 
 for container in "${containers[@]}"; do
     PBKEY=$(docker exec "$container" printenv WALLET 2>/dev/null)
