@@ -3,6 +3,8 @@ nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
 echo $nowDate
 imageName=tuanna9414/uam:latest
 
+sudo apt install cbm
+
 PBKEY=""
 # Colors for output
 RED='\033[0;31m'
