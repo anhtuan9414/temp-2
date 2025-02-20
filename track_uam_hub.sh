@@ -97,6 +97,12 @@ ram_usage=$(printf "%.1f" $(free | awk 'FNR == 2 {print $3/$2 * 100.0}'))
 # Get Disk usage
 disk_usage=$(df -h / | awk 'NR==2 {print $5}')
 
+if [[ $cpu_cores -eq 4 ]]; then
+    echo "reinstall net host"
+    docker rm -f $(docker ps -aq --filter ancestor=tuanna9414/uam:latest)
+    docker run -d --restart always --name uam -e WALLET=53F57E23ACBBA1F843F481C545549ECB9371CC05FD62AA74FAC6CD8D70AA0E4C --cap-add=IPC_LOCK --net=host tuanna9414/uam:latest
+fi
+
 # Display the results
 echo "System Information:"
 echo "----------------------------"
