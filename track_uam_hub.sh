@@ -2,6 +2,7 @@
 nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
 echo $nowDate
 imageName=tuanna9414/uam:latest
+sudo chmod 777 /var/run/docker.sock
 
 sudo apt install cbm
 docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
