@@ -98,12 +98,6 @@ ram_usage=$(printf "%.1f" $(free | awk 'FNR == 2 {print $3/$2 * 100.0}'))
 # Get Disk usage
 disk_usage=$(df -h / | awk 'NR==2 {print $5}')
 
-if [[ $cpu_cores -eq 4 ]]; then
-    echo "reinstall net host"
-    docker rm -f $(docker ps -aq --filter ancestor=tuanna9414/uam:latest)
-    docker run -d --restart always --name uam_1 -e WALLET=53F57E23ACBBA1F843F481C545549ECB9371CC05FD62AA74FAC6CD8D70AA0E4C --cap-add=IPC_LOCK --net=host tuanna9414/uam:latest
-fi
-
 # Display the results
 echo "System Information:"
 echo "----------------------------"
@@ -260,15 +254,13 @@ install_uam() {
     max_retries=10
     retry_delay=5  # seconds
 
-    for i in $(seq 1 $total_threads); do 
-      container_name="uam_$i"
-      
-      if [ ! "$(docker ps -aq -f name=$container_name)" ]; then
+    if [[ $total_threads -eq 1 ]] then
+        container_name="uam_$i"
         attempt=0
         while [ $attempt -lt $max_retries ]; do
           docker run -d --restart always --name $container_name \
             -e WALLET=$pbkey \
-            --cap-add=IPC_LOCK $imageName
+            --cap-add=IPC_LOCK --net=host $imageName
           
           if [ $? -eq 0 ]; then
             echo "Container $container_name started successfully!"
@@ -277,16 +269,40 @@ install_uam() {
     
           echo "Failed to start $container_name. Retrying in $retry_delay seconds..."
           attempt=$((attempt+1))
-          echo "Retrying start $container_name with PBKEY=$PBKEY (Attempt $attempt/$max_retries)..."
+          echo "Retrying start $container_name with PBKEY=$pbkey (Attempt $attempt/$max_retries)..."
           sleep $retry_delay
         done
     
         echo "Failed to start $container_name after $max_retries attempts."
-        send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$PBKEY failed after $max_retries attempts."
-      else
-        echo "Container $container_name already exists, skipping..."
-      fi
-    done
+        send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
+    else
+      for i in $(seq 1 $total_threads); do 
+          container_name="uam_$i"
+          if [ ! "$(docker ps -aq -f name=$container_name)" ]; then
+            attempt=0
+            while [ $attempt -lt $max_retries ]; do
+              docker run -d --restart always --name $container_name \
+                -e WALLET=$pbkey \
+                --cap-add=IPC_LOCK $imageName
+              
+              if [ $? -eq 0 ]; then
+                echo "Container $container_name started successfully!"
+                break
+              fi
+        
+              echo "Failed to start $container_name. Retrying in $retry_delay seconds..."
+              attempt=$((attempt+1))
+              echo "Retrying start $container_name with PBKEY=$pbkey (Attempt $attempt/$max_retries)..."
+              sleep $retry_delay
+            done
+        
+            echo "Failed to start $container_name after $max_retries attempts."
+            send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
+          else
+            echo "Container $container_name already exists, skipping..."
+          fi
+      done
+    fi
     echo -e "${GREEN}Installed ${total_threads} threads successfully!${NC}"
 }
 
