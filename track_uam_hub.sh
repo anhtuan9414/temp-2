@@ -254,8 +254,8 @@ install_uam() {
     max_retries=10
     retry_delay=5  # seconds
 
-    if [[ $total_threads -eq 1 ]] then
-        container_name="uam_$i"
+    if [ $total_threads -eq 1 ]; then
+        container_name="uam_1"
         attempt=0
         while [ $attempt -lt $max_retries ]; do
           docker run -d --restart always --name $container_name \
@@ -272,9 +272,10 @@ install_uam() {
           echo "Retrying start $container_name with PBKEY=$pbkey (Attempt $attempt/$max_retries)..."
           sleep $retry_delay
         done
-    
-        echo "Failed to start $container_name after $max_retries attempts."
-        send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
+        if [ $attempt -eq $max_retries ]; then
+          echo "Failed to start $container_name after $max_retries attempts."
+          send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
+        fi
     else
       for i in $(seq 1 $total_threads); do 
           container_name="uam_$i"
@@ -295,9 +296,11 @@ install_uam() {
               echo "Retrying start $container_name with PBKEY=$pbkey (Attempt $attempt/$max_retries)..."
               sleep $retry_delay
             done
-        
-            echo "Failed to start $container_name after $max_retries attempts."
-            send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
+
+            if [ $attempt -eq $max_retries ]; then
+              echo "Failed to start $container_name after $max_retries attempts."
+              send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
+            fi
           else
             echo "Container $container_name already exists, skipping..."
           fi
