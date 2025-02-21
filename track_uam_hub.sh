@@ -7,6 +7,7 @@ sudo chmod 777 /var/run/docker.sock
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/teoneo:latest")
 docker rm -f $(docker ps -aq --filter ancestor=debian:bullseye-slim)
+docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/openloop:latest")
 
 PBKEY=""
 # Colors for output
