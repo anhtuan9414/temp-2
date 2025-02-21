@@ -248,12 +248,11 @@ for val in $threads; do
     fi
 done
 
-install_uam() {
+run_docker_with_retry() {
     local total_threads=$1
     local pbkey=$2
-    echo "Starting the reinstallation of threads..."
-    max_retries=10
-    retry_delay=5  # seconds
+    local max_retries=10
+    local retry_delay=5  # seconds
 
     if [ $total_threads -eq 1 ]; then
         echo "Run single docker with --net=host option."
@@ -266,7 +265,7 @@ install_uam() {
           
           if [ $? -eq 0 ]; then
             echo "Container $container_name started successfully!"
-            break
+            return 0
           fi
     
           echo "Failed to start $container_name. Retrying in $retry_delay seconds..."
@@ -274,10 +273,8 @@ install_uam() {
           echo "Retrying start $container_name with PBKEY=$pbkey (Attempt $attempt/$max_retries)..."
           sleep $retry_delay
         done
-        if [ $attempt -eq $max_retries ]; then
-          echo "Failed to start $container_name after $max_retries attempts."
-          send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
-        fi
+        echo "Failed to start $container_name after $max_retries attempts."
+        send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
     else
       echo "Run multiple docker."
       for i in $(seq 1 $total_threads); do 
@@ -291,7 +288,7 @@ install_uam() {
               
               if [ $? -eq 0 ]; then
                 echo "Container $container_name started successfully!"
-                break
+                return 0
               fi
         
               echo "Failed to start $container_name. Retrying in $retry_delay seconds..."
@@ -300,15 +297,20 @@ install_uam() {
               sleep $retry_delay
             done
 
-            if [ $attempt -eq $max_retries ]; then
-              echo "Failed to start $container_name after $max_retries attempts."
-              send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
-            fi
+            echo "Failed to start $container_name after $max_retries attempts."
+            send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ DOCKER WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0ARestarted Threads: $numberRestarted%0A%0AFailed to start $container_name with PBKEY=$pbkey failed after $max_retries attempts."
           else
             echo "Container $container_name already exists, skipping..."
           fi
       done
     fi
+}
+
+install_uam() {
+    local total_threads=$1
+    local pbkey=$2
+    echo "Starting the reinstallation of threads..."
+    run_docker_with_retry "$total_threads" "$pbkey"
     echo -e "${GREEN}Installed ${total_threads} threads successfully!${NC}"
 }
 
