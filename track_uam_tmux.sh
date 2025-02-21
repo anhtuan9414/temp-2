@@ -181,7 +181,7 @@ else
   fi
 fi
 
-install_uam() {
+run_tmux_with_retry() {
     local pbkey=$1
     local max_retries=50
     local wait_seconds=15
@@ -200,15 +200,20 @@ install_uam() {
         if [ -f /root/miner.log ]; then
             return 0
         else
-            echo "UAM up failed"
+            echo "Tmux up failed"
             retry_count=$((retry_count + 1))
-            echo "Retrying UAM with PBKEY=$pbkey (Attempt $retry_count/$max_retries)..."
+            echo "Retrying Tmux with PBKEY=$pbkey (Attempt $retry_count/$max_retries)..."
         fi
     done
 
-    echo "UAM up failed after $max_retries attempts."
-    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0A%0AUAM up with PBKEY=$pbkey failed after $max_retries attempts."
-    exit 1
+    echo "Tmux up failed after $max_retries attempts."
+    send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ TMUX WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0ACurrent Block: $currentblock%0APBKey: $PBKEY%0ATotal Threads: $totalThreads%0A%0ATmux up with PBKEY=$pbkey failed after $max_retries attempts."
+}
+
+install_uam() {
+    local pbkey=$1
+    echo "Starting the reinstallation of threads..."
+    run_tmux_with_retry "$pbkey"
     echo -e "${GREEN}Installed ${total_threads} threads successfully!${NC}"
 }
 
