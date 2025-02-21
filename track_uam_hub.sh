@@ -4,9 +4,9 @@ echo $nowDate
 imageName=tuanna9414/uam:latest
 sudo chmod 777 /var/run/docker.sock
 
-sudo apt install cbm
-docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
-docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/teoneo:latest")
+#docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
+#docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/teoneo:latest")
+docker rm -f $(docker ps -aq --filter ancestor=debian:bullseye-slim)
 
 PBKEY=""
 # Colors for output
