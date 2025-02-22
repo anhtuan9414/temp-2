@@ -278,7 +278,7 @@ run_docker_with_retry() {
       echo "Run multiple docker."
       for i in $(seq 1 $total_threads); do 
           container_name="uam_$i"
-          if [ ! "$(docker ps -aq -f name=$container_name)" ]; then
+          if [ ! "$(docker ps -aq -f name="^${container_name}$")" ]; then
             attempt=0
             while [ $attempt -lt $max_retries ]; do
               docker run -d --restart always --name $container_name \
