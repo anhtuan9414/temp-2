@@ -162,7 +162,7 @@ if [ -z "$currentblock" ]; then
 fi
 
 echo -e "${GREEN}Current Block: $currentblock${NC}"
-block=$((currentblock - 32))
+block=$((currentblock - 45))
 totalThreads=$(docker ps | grep $imageName | wc -l)
 oldTotalThreads=$totalThreads
 
