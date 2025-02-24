@@ -5,6 +5,8 @@ net=$(ip link show | awk -F: '/^[0-9]+:/ {print $2}' | tr -d ' ' | grep -v '^lo$
 if [[ -z "$net" ]]; then
     echo "No network interface found."
     exit 1
+else
+    echo "First network interface: $net"
 fi
 
 echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections
