@@ -186,10 +186,10 @@ if [[ $cpu_cores -eq 8 && $totalThreads -lt 2 ]]; then
     setNewThreadUAM=1
 fi
 
-if [[ $cpu_cores -eq 16 && $totalThreads -lt 5 ]]; then
-    totalThreads=5
-    setNewThreadUAM=1
-fi
+#if [[ $cpu_cores -eq 16 && $totalThreads -lt 5 ]]; then
+#    totalThreads=5
+#    setNewThreadUAM=1
+#fi
 
 if [[ $cpu_cores -eq 48 && $totalThreads -lt 12 ]]; then
     totalThreads=12
