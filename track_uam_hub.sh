@@ -6,7 +6,7 @@ sudo chmod 777 /var/run/docker.sock
 
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/teoneo:latest")
-docker rm -f $(docker ps -aq --filter ancestor=debian:bullseye-slim)
+#docker rm -f $(docker ps -aq --filter ancestor=debian:bullseye-slim)
 
 PBKEY=""
 # Colors for output
@@ -129,42 +129,76 @@ fi
 # Retry parameters
 max_retries=30
 retry_count=0
-setNewThreadUAM=0
 
-while [ $retry_count -lt $max_retries ]; do
-    currentblock=$(curl -s 'https://utopian.is/api/explorer/blocks/get' \
-      -H 'accept: application/json, text/javascript, */*; q=0.01' \
-      -H 'accept-language: en-US,en;q=0.9,vi;q=0.8' \
-      -H 'priority: u=1, i' \
-      -H 'referer: https://utopian.is/explorer' \
-      -H 'sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"' \
-      -H 'sec-ch-ua-mobile: ?0' \
-      -H 'sec-ch-ua-platform: "Windows"' \
-      -H 'sec-fetch-dest: empty' \
-      -H 'sec-fetch-mode: cors' \
-      -H 'sec-fetch-site: same-origin' \
-      -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
-      -H 'x-requested-with: XMLHttpRequest' | grep -o '"block":[0-9]*' | awk -F: '{print $2}' | head -n 1)
+get_current_block_on_utopian() {
+    while [ $retry_count -lt $max_retries ]; do
+        currentblock=$(curl -s 'https://utopian.is/api/explorer/blocks/get' \
+          -H 'accept: application/json, text/javascript, */*; q=0.01' \
+          -H 'accept-language: en-US,en;q=0.9,vi;q=0.8' \
+          -H 'priority: u=1, i' \
+          -H 'referer: https://utopian.is/explorer' \
+          -H 'sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"' \
+          -H 'sec-ch-ua-mobile: ?0' \
+          -H 'sec-ch-ua-platform: "Windows"' \
+          -H 'sec-fetch-dest: empty' \
+          -H 'sec-fetch-mode: cors' \
+          -H 'sec-fetch-site: same-origin' \
+          -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
+          -H 'x-requested-with: XMLHttpRequest' | grep -o '"block":[0-9]*' | awk -F: '{print $2}' | head -n 1)
+    
+        if [ -n "$currentblock" ] && [ "$currentblock" != "null" ]; then
+            break
+        else
+            retry_count=$((retry_count + 1))
+            echo "Attempt $retry_count/$max_retries failed to fetch current block. Retrying in 10 seconds..."
+            sleep 10
+        fi
+    done
+}
 
-    if [ -n "$currentblock" ]; then
-        break
-    else
-        retry_count=$((retry_count + 1))
-        echo "Attempt $retry_count/$max_retries failed to fetch current block. Retrying in 10 seconds..."
-        sleep 10
+# Token Expired: 27.02.2026
+get_current_block_self() {
+    local fromBlock=$(cat lastBlock.txt 2>/dev/null)
+    if [ -z "$fromBlock" ] || [ "$fromBlock" == "null" ]; then
+        fromBlock=184846
     fi
-done
+    while [ $retry_count -lt $max_retries ]; do
+        currentblock=$(curl -s -X POST http://79.76.113.70:22825/api/1.0 \
+            -H "Content-Type: application/json" \
+            -d '{
+                "method": "getMiningBlocksWithTreasury",
+                "params": {
+                    "fromBlockId": "'"$fromBlock"'",
+                    "limit": "1"
+                },
+                "token": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+            }' | grep -oP '"id":\s*\K\d+')
+    
+        if [ -n "$currentblock" ] && [ "$currentblock" != "null" ]; then
+            break
+        else
+            retry_count=$((retry_count + 1))
+            echo "Attempt $retry_count/$max_retries failed to fetch current block. Retrying in 10 seconds..."
+            sleep 10
+        fi
+    done
+}
 
-if [ -z "$currentblock" ]; then
+get_current_block_self
+
+if [ -z "$currentblock" ] || [ "$currentblock" == "null" ]; then
     echo "Failed to fetch the current block after $max_retries attempts. Exiting..."
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ FETCH BLOCK WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0A%0A✅ UAM Information:%0A----------------------------%0APBKey: $PBKEY%0A%0AFailed to fetch the current block after $max_retries attempts."
     exit 1
 fi
 
+echo $currentblock > lastBlock.txt
+
 echo -e "${GREEN}Current Block: $currentblock${NC}"
 block=$((currentblock - 30))
 totalThreads=$(docker ps | grep $imageName | wc -l)
 oldTotalThreads=$totalThreads
+setNewThreadUAM=0
 
 echo "PBKEY: $PBKEY"
 echo "Total Threads: $totalThreads"
