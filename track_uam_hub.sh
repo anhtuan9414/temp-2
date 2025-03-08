@@ -248,14 +248,14 @@ if [ "$setNewThreadUAM" -gt 0 ]; then
     send_telegram_notification "$nowDate%0A%0A ⚠️⚠️ LOW THREAD UAM WARNING!!!%0A%0AIP: $PUBLIC_IP%0AISP: $ISP%0AOrg: $ORG%0ACountry: $COUNTRY%0ARegion: $REGION%0ACity: $CITY%0A%0A✅ System Information:%0A----------------------------%0AOS: $os_name%0ATotal CPU Cores: $cpu_cores%0ACPU Name: $cpu_name%0ACPU Load: $cpu_load%%0ATotal RAM: $total_ram MB%0ARAM Usage: $ram_usage%%0AAvailable RAM: $available_ram MB%0ADisk Usage (Root): $disk_usage%0AUptime: $uptime%0A%0A✅ UAM Information:%0A----------------------------%0APBKey: $PBKEY%0A%0AIncreased the number of threads: $oldTotalThreads -> $totalThreads."
 fi
 
-allthreads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=$imageName)
+allthreads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=$imageName | awk -F\| '{print $1}')
 
 restarted_threads=()
 numberRestarted=0
 
 for val in $allthreads; do
-    container_name=$(echo $val| awk -F\| '{print $1}')
-    container_uptime=$(echo $val| awk -F\| '{print $2}' | sed 's/Up //')
+    container_name=$val
+    container_uptime=$(docker ps -f name="^${container_name}$" --format "{{.Status}}" | sed 's/Up //')
     if [ $(docker logs $container_name --tail 500 2>&1 | grep -i "Error! System clock seems incorrect" | wc -l) -eq 1 ]; then 
         #sudo docker restart $container_name
         #echo -e "${RED}Restart: $container_name - Uptime: $container_uptime - Error! System clock seems incorrect${NC}"
@@ -266,11 +266,11 @@ for val in $allthreads; do
     fi
 done
 
-threads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=$imageName | grep -e "45 hours" -e "46 hours" -e "47 hours" -e "48 hours" -e "2 days" -e "3 days" -e "4 days" -e "5 days" -e "6 days" -e "7 days" -e "8 days" -e "9 days" -e "10 days" -e "11 days" -e "12 days" -e "13 days" -e "14 days" -e "15 days" -e "16 days"  -e "17 days" -e "18 days" -e "19 days" -e "20 days" -e "21 days" -e "22 days" -e "23 days" -e "24 days" -e "25 days" -e "26 days" -e "27 days" -e "28 days" -e "29 days" -e "30 days" -e "31 days" -e "2 weeks" -e "1 weeks" -e "1 week" -e "3 weeks" -e "4 weeks" -e "5 weeks" -e "6 weeks" -e "7 weeks" -e "8 weeks" -e "9 weeks" -e "10 weeks" -e "11 weeks" -e "12 weeks" -e "13 weeks" -e "1 months" -e "2 months" -e "3 months" -e "4 months" -e "5 months" -e "6 months" -e "7 months" -e "8 months" -e "9 months" -e "10 months" -e "11 months" -e "12 months" -e "1 years" -e "1 year" -e "2 years" -e "3 years" -e "4 years" -e "5 years")
+threads=$(docker ps --format '{{.Names}}|{{.Status}}' --filter ancestor=$imageName | grep -e "45 hours" -e "46 hours" -e "47 hours" -e "48 hours" -e "2 days" -e "3 days" -e "4 days" -e "5 days" -e "6 days" -e "7 days" -e "8 days" -e "9 days" -e "10 days" -e "11 days" -e "12 days" -e "13 days" -e "14 days" -e "15 days" -e "16 days"  -e "17 days" -e "18 days" -e "19 days" -e "20 days" -e "21 days" -e "22 days" -e "23 days" -e "24 days" -e "25 days" -e "26 days" -e "27 days" -e "28 days" -e "29 days" -e "30 days" -e "31 days" -e "2 weeks" -e "1 weeks" -e "1 week" -e "3 weeks" -e "4 weeks" -e "5 weeks" -e "6 weeks" -e "7 weeks" -e "8 weeks" -e "9 weeks" -e "10 weeks" -e "11 weeks" -e "12 weeks" -e "13 weeks" -e "1 months" -e "2 months" -e "3 months" -e "4 months" -e "5 months" -e "6 months" -e "7 months" -e "8 months" -e "9 months" -e "10 months" -e "11 months" -e "12 months" -e "1 years" -e "1 year" -e "2 years" -e "3 years" -e "4 years" -e "5 years" | awk -F\| '{print $1}')
 
 for val in $threads; do
-    container_name=$(echo $val| awk -F\| '{print $1}')
-    container_uptime=$(echo $val| awk -F\| '{print $2}' | sed 's/Up //')
+    container_name=$val
+    container_uptime=$(docker ps -f name="^${container_name}$" --format "{{.Status}}" | sed 's/Up //')
     lastblock=$(docker logs $container_name --tail 500 2>&1 | grep -v "sendto: Invalid argument" | awk '/Processed block/ {block=$NF} END {print block}')
     echo "Last block of $container_name: $lastblock"
     if [ -z "$lastblock" ]; then 
