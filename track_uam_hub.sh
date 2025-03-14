@@ -215,6 +215,7 @@ if [[ $cpu_cores -eq 4 && $totalThreads -ge 2 ]]; then
     for i in $(seq 2 $totalThreads); do
       echo "Removing container: uam_$i"
       sudo docker rm -f uam_$i
+      sudo rm -rf /opt/uam_data/uam_$i
     done
     totalThreads=1
     echo -e "${YELLOW}DELETE THREAD UAM WARNING!!!${NC}"
@@ -260,6 +261,7 @@ for val in $allthreads; do
         #sudo docker restart $container_name
         #echo -e "${RED}Restart: $container_name - Uptime: $container_uptime - Error! System clock seems incorrect${NC}"
         sudo docker rm -f $container_name
+        sudo rm -rf /opt/uam_data/$container_name
         echo -e "${RED}Remove: $container_name - Uptime: $container_uptime - Error! System clock seems incorrect${NC}"
         restarted_threads+=("$container_name - Uptime: $container_uptime - Error! System clock seems incorrect")
         ((numberRestarted+=1))
@@ -277,6 +279,7 @@ for val in $threads; do
         #sudo docker restart $container_name
         #echo -e "${RED}Restart: $container_name - Uptime: $container_uptime - Not activated after 45 hours${NC}"
         sudo docker rm -f $container_name
+        sudo rm -rf /opt/uam_data/$container_name
         echo -e "${RED}Remove: $container_name - Uptime: $container_uptime - Not activated after 45 hours${NC}"
         restarted_threads+=("$container_name - Uptime: $container_uptime - Not activated after 45 hours")
         ((numberRestarted+=1))
@@ -284,6 +287,7 @@ for val in $threads; do
         #sudo docker restart $container_name
         #echo -e "${RED}Restart: $container_name - Uptime: $container_uptime - Missed: $(($currentblock - $lastblock)) blocks${NC}"
         sudo docker rm -f $container_name
+        sudo rm -rf /opt/uam_data/$container_name
         echo -e "${RED}Remove: $container_name - Uptime: $container_uptime - Missed: $(($currentblock - $lastblock)) blocks${NC}"
         restarted_threads+=("$container_name - Uptime: $container_uptime - Last Block: $lastblock - Missed: $(($currentblock - $lastblock)) blocks")
         ((numberRestarted+=1))
