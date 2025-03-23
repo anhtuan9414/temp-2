@@ -163,7 +163,7 @@ get_current_block_on_utopian() {
     done
 }
 
-# Token Expired: 27.02.2026
+# Token Expired: 22.03.2026
 get_current_block_self() {
     local fromBlock=$(cat lastBlock.txt 2>/dev/null)
     if [ -z "$fromBlock" ] || [ "$fromBlock" == "null" ]; then
