@@ -40,9 +40,6 @@ send_telegram_notification() {
         -d text="$message" > /dev/null
 }
 
-# Get the VPS public IP address
-PUBLIC_IP=$(curl -s ifconfig.me)
-
 # Fetch public IP and ISP info from ip-api
 max_ip_retries=20
 ip_attempt=0
@@ -65,10 +62,7 @@ ORG=$(echo "$response" | grep -oP '"org":\s*"\K[^"]+')
 REGION=$(echo "$response" | grep -oP '"regionName":\s*"\K[^"]+')
 CITY=$(echo "$response" | grep -oP '"city":\s*"\K[^"]+')
 COUNTRY=$(echo "$response" | grep -oP '"country":\s*"\K[^"]+')
-
-if [ -z "$PUBLIC_IP" ]; then
-    PUBLIC_IP=$(echo "$response" | grep -oP '"query":\s*"\K[^"]+')
-fi
+PUBLIC_IP=$(echo "$response" | grep -oP '"query":\s*"\K[^"]+')
 
 # Display the results
 echo "----------------------------"
