@@ -48,7 +48,7 @@ max_ip_retries=20
 ip_attempt=0
 
 while (( ip_attempt < max_ip_retries )); do
-    response=$(curl -s --fail http://ip-api.com/json)
+    response=$(curl -s --fail http://138.2.128.87:3000/get-ip-info)
     
     if [[ $? -eq 0 ]]; then
        break  # Exit script if successful
