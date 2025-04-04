@@ -159,7 +159,6 @@ get_current_block_on_utopian() {
     done
 }
 
-# Token Expired: 22.03.2026
 get_current_block_self() {
     local fromBlock=$(cat lastBlock.txt 2>/dev/null)
     if [ -z "$fromBlock" ] || [ "$fromBlock" == "null" ]; then
@@ -174,7 +173,7 @@ get_current_block_self() {
                     "fromBlockId": "'"$fromBlock"'",
                     "limit": "1"
                 },
-                "token": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                "token": "421DC79A8E019ECC959F5F39BA54884A"
             }' | grep -oP '"id":\s*\K\d+')
     
         if [ -n "$currentblock" ] && [ "$currentblock" != "null" ]; then
