@@ -1,5 +1,5 @@
 #!/bin/bash
-nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
+nowDate=$(date +"%d-%m-%Y %H:%M:%S" --date="7 hours")
 echo $nowDate
 API_URL="$1"
 API_KEY="$2"
