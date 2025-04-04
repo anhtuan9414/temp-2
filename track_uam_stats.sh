@@ -28,7 +28,7 @@ get_current_block_self() {
                     "fromBlockId": "'"$fromBlock"'",
                     "limit": "1"
                 },
-                "token": '"$API_KEY"'
+                "token": "'"$API_KEY"'"
             }')
     
         if [ -n "$data" ] && [ "$data" != "null" ]; then
