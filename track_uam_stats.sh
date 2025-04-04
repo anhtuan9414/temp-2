@@ -49,8 +49,8 @@ get_current_block_self() {
     done
 }
 
+fromBlock=$(cat lastBlockStats.txt 2>/dev/null)
 get_balance_self() {
-    local fromBlock=$(cat lastBlockStats.txt 2>/dev/null)
     if [ -z "$fromBlock" ] || [ "$fromBlock" == "null" ]; then
         fromBlock=184846
     fi
@@ -96,4 +96,6 @@ echo -e "${GREEN}Reward Per Thread: $rewardPerThread${NC}"
 echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
 echo -e "${GREEN}CRP Balance: $balance${NC}"
 
-send_telegram_notification "$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Last Block: $lastBlock%0A🍀 Mining Threads: $miningThreads%0A🍀 Reward Per Thread: $rewardPerThread%0A🍀 Total Mining Threads: $totalMiningThreads%0A🍀 CRP Balance: $balance"
+if [ "$lastBlock" -gt "$fromBlock" ]; then
+   send_telegram_notification "$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Last Block: $lastBlock%0A🍀 Mining Threads: $miningThreads%0A🍀 Reward Per Thread: $rewardPerThread%0A🍀 Total Mining Threads: $totalMiningThreads%0A🍀 CRP Balance: $balance"
+fi
