@@ -1,5 +1,5 @@
 #!/bin/bash
-nowDate=$(date +"%Y-%m-%d %H:%M:%S %Z")
+nowDate=$(date +"%d-%m-%Y %H:%M:%S" --date="7 hours")
 echo $nowDate
 imageName=tuanna9414/uam:latest
 sudo chmod 777 /var/run/docker.sock
