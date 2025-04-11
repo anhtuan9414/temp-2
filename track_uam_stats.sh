@@ -48,8 +48,8 @@ get_current_block_self() {
         fi
     done
 }
-
-fromBlock=$(cat lastBlockStats.txt 2>/dev/null)
+lastBlockStats=lastBlockStats_$API_KEY.txt
+fromBlock=$(cat $lastBlockStats 2>/dev/null)
 get_balance_self() {
     max_retries=30
     retry_count=0
@@ -78,7 +78,8 @@ get_balance_self() {
     done
 }
 
-fromDate=$(cat lastMiningDateStats.txt 2>/dev/null)
+lastMiningDateStats=lastMiningDateStats_$API_KEY.txt
+fromDate=$(cat $lastMiningDateStats 2>/dev/null)
 get_mining_info() {
     if [ -z "$fromDate" ] || [ "$fromDate" == "null" ]; then
         fromDate=""
@@ -113,7 +114,7 @@ get_balance_self
 get_mining_info
 messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP Balance: $balance%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Mining Threads: $miningThreads%0A🍀 Reward Per Thread: $rewardPerThread%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
 
-echo $lastBlock > lastBlockStats.txt
+echo $lastBlock > $lastBlockStats
 echo -e "${GREEN}Last Block Time: $lastBlockTime${NC}"
 echo -e "${GREEN}Last Block: $lastBlock${NC}"
 echo -e "${GREEN}Mining Threads: $miningThreads${NC}"
@@ -121,7 +122,7 @@ echo -e "${GREEN}Reward Per Thread: $rewardPerThread${NC}"
 echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
 echo -e "${GREEN}CRP Balance: $balance${NC}"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
-   echo $miningCreated > lastMiningDateStats.txt
+   echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated +7 hours" +"%d-%m-%Y %H:%M")
    messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward"
    echo -e "${GREEN}$miningDetails: $miningReward${NC}"
