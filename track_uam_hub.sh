@@ -7,8 +7,8 @@ sudo chmod 777 /var/run/docker.sock
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/teoneo:latest")
 #docker rm -f $(docker ps -aq --filter ancestor=debian:bullseye-slim)
-#docker rm -f $(docker ps -aq --filter ancestor=tuanna9414/gradient:latest)
-#docker image prune -a -f
+docker rm -f $(docker ps -aq --filter ancestor=tuanna9414/blmesh:latest)
+docker image prune -a -f
 
 PBKEY=""
 # Colors for output
