@@ -156,7 +156,7 @@ formattedValue=$(printf "%.3f" "$value")
 
 echo -e "${GREEN}CRP Balance: $balance CRP${NC} ≈ $formattedValue$"
 
-messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP Price: $crpPrice\$%0A🍀 CRP Balance: $balance CRP ≈ $formattedValue\$%0A🍀 Mining Threads: $miningThreads%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Reward Per Thread: $rewardPerThread CRP%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
+messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP/USDT (based crp.is): $crpPrice\$%0A🍀 CRP Balance: $balance CRP ≈ $formattedValue\$%0A🍀 Mining Threads: $miningThreads%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Reward Per Thread: $rewardPerThread CRP%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
