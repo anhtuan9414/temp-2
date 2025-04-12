@@ -68,7 +68,7 @@ get_balance_self() {
             }')
     
         if [ -n "$data" ] && [ "$data" != "null" ]; then
-            balance=$(echo $data | grep -oP '"result":\s*\K\d+')
+            balance=$(echo $data | grep -oP '"result":\s*\K\d+\.\d+')
             break
         else
             retry_count=$((retry_count + 1))
@@ -123,7 +123,7 @@ echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
 echo -e "${GREEN}CRP Balance: $balance${NC}"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
-   formattedTime=$(date -d "$miningCreated +7 hours" +"%d-%m-%Y %H:%M")
+   formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
    messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward"
    echo -e "${GREEN}$miningDetails: $miningReward${NC}"
 fi
