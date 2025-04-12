@@ -152,7 +152,7 @@ echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
 echo -e "${GREEN}CRP/USDT (based crp.is): $crpPrice${NC}$"
 
 value=$(echo "$crpPrice * $balance" | bc -l)
-formattedValue=$(printf "%.3f" "$value")
+formattedValue=$(printf "%.4f" "$value")
 
 echo -e "${GREEN}CRP Balance: $balance CRP${NC} ≈ $formattedValue$"
 
@@ -161,7 +161,7 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
    miningRewardValue=$(echo "$crpPrice * $miningReward" | bc -l)
-   formattedMiningRewardValue=$(printf "%.3f" "$miningRewardValue")
+   formattedMiningRewardValue=$(printf "%.4f" "$miningRewardValue")
    messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$"
    echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue\$${NC}"
 fi
