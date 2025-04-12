@@ -125,7 +125,7 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
    messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward"
-   echo -e "${GREEN}$miningDetails: $miningReward${NC}"
+   echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward${NC}"
 fi
 
 if [ "$lastBlock" -gt "$fromBlock" ]; then
