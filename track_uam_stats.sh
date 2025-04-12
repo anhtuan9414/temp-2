@@ -78,6 +78,35 @@ get_balance_self() {
     done
 }
 
+get_crp_price() {
+    max_retries=30
+    retry_count=0
+    while [ $retry_count -lt $max_retries ]; do
+        local data=$(curl 'https://crp.is:8182/market/pairs' \
+                      -H 'Accept: application/json, text/plain, */*' \
+                      -H 'Accept-Language: en-US,en;q=0.9,vi;q=0.8' \
+                      -H 'Connection: keep-alive' \
+                      -H 'Origin: https://crp.is' \
+                      -H 'Referer: https://crp.is/' \
+                      -H 'Sec-Fetch-Dest: empty' \
+                      -H 'Sec-Fetch-Mode: cors' \
+                      -H 'Sec-Fetch-Site: same-site' \
+                      -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36' \
+                      -H 'sec-ch-ua: "Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"' \
+                      -H 'sec-ch-ua-mobile: ?0' \
+                      -H 'sec-ch-ua-platform: "Windows"')
+    
+        if [ -n "$data" ] && [ "$data" != "null" ]; then
+            crpPrice=$(echo $data | jq '.result.pairs[] | select(.pair.pair == "crp_usdt") | '.data_market.close'')
+            break
+        else
+            retry_count=$((retry_count + 1))
+            echo "Attempt $retry_count/$max_retries failed to fetch crp price. Retrying in 10 seconds..."
+            sleep 10
+        fi
+    done
+}
+
 lastMiningDateStats=lastMiningDateStats_$API_KEY.txt
 fromDate=$(cat $lastMiningDateStats 2>/dev/null)
 get_mining_info() {
@@ -111,21 +140,30 @@ send_telegram_notification() {
 
 get_current_block_self
 get_balance_self
+get_crp_price
 get_mining_info
-messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP Balance: $balance%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Mining Threads: $miningThreads%0A🍀 Reward Per Thread: $rewardPerThread%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
 
 echo $lastBlock > $lastBlockStats
 echo -e "${GREEN}Last Block Time: $lastBlockTime${NC}"
 echo -e "${GREEN}Last Block: $lastBlock${NC}"
 echo -e "${GREEN}Mining Threads: $miningThreads${NC}"
-echo -e "${GREEN}Reward Per Thread: $rewardPerThread${NC}"
+echo -e "${GREEN}Reward Per Thread: $rewardPerThread CRP${NC}"
 echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
-echo -e "${GREEN}CRP Balance: $balance${NC}"
+echo -e "${GREEN}CRP/USDT (based crp.is): $crpPrice${NC}$"
+
+value=$(echo "$crpPrice * $balance" | bc -l)
+formattedValue=$(printf "%.3f" "$value")
+
+echo -e "${GREEN}CRP Balance: $balance CRP${NC} ≈ $formattedValue$"
+
+messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP Price: $crpPrice\$%0A🍀 CRP Balance: $balance CRP ≈ $formattedValue\$%0A🍀 Mining Threads: $miningThreads%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Reward Per Thread: $rewardPerThread CRP%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
-   messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward"
-   echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward${NC}"
+   miningRewardValue=$(echo "$crpPrice * $miningReward" | bc -l)
+   formattedMiningRewardValue=$(printf "%.3f" "$miningRewardValue")
+   messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$"
+   echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue\$${NC}"
 fi
 
 if [ "$lastBlock" -gt "$fromBlock" ]; then
