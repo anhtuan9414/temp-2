@@ -163,7 +163,7 @@ echo -e "${GREEN}USDT/VND P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellR
 value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
 vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
-vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.2f\n" "$vndValue")
+vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
 
 
 echo -e "${GREEN}CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ${NC}"
@@ -175,7 +175,7 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    miningRewardValue=$(echo "$crpPrice * $miningReward" | bc -l)
    formattedMiningRewardValue=$(printf "%.4f" "$miningRewardValue")
    miningRewardVndValue=$(echo "$sellRate * $formattedMiningRewardValue" | bc -l)
-   formattedMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.2f\n" "$miningRewardVndValue")
+   formattedMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$miningRewardVndValue")
    messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
    echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue\$ ≈ $formattedMiningRewardVndValueđ${NC}"
 fi
