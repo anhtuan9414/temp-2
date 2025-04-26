@@ -129,6 +129,13 @@ get_mining_info() {
     miningCreated=$(echo "$res" | jq -r '.created')
 }
 
+get_usdt_vnd_rate() {
+    local res=$(curl --compressed 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search' \
+  -H "Content-Type: application/json" \
+  --data-raw '{"fiat":"VND","page":1,"rows":1,"tradeType":"SELL","asset":"USDT","countries":[],"proMerchantAds":false,"shieldMerchantAds":false,"filterType":"tradable","periods":[],"additionalKycVerifyFilter":0,"publisherType":"merchant","payTypes":[],"classifies":["mass","profession","fiat_trade"],"tradedWith":false,"followed":false}')
+    sellRate=$(echo "$res" | jq -r '.data[0].adv.price')
+}
+
 
 # Function to send a Telegram notification
 send_telegram_notification() {
@@ -142,6 +149,7 @@ get_current_block_self
 get_balance_self
 get_crp_price
 get_mining_info
+get_usdt_vnd_rate
 
 echo $lastBlock > $lastBlockStats
 echo -e "${GREEN}Last Block Time: $lastBlockTime${NC}"
@@ -149,21 +157,27 @@ echo -e "${GREEN}Last Block: $lastBlock${NC}"
 echo -e "${GREEN}Mining Threads: $miningThreads${NC}"
 echo -e "${GREEN}Reward Per Thread: $rewardPerThread CRP${NC}"
 echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
-echo -e "${GREEN}CRP/USDT (based crp.is): $crpPrice${NC}$"
+echo -e "${GREEN}CRP/USDT (based crp.is): $crpPrice\$${NC}"
+echo -e "${GREEN}USDT/VND P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ${NC}"
 
 value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
+vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
+vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.2f\n" "$vndValue")
 
-echo -e "${GREEN}CRP Balance: $balance CRP${NC} ≈ $formattedValue$"
 
-messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP/USDT (based crp.is): $crpPrice\$%0A🍀 CRP Balance: $balance CRP ≈ $formattedValue\$%0A🍀 Mining Threads: $miningThreads%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Reward Per Thread: $rewardPerThread CRP%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
+echo -e "${GREEN}CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ${NC}"
+
+messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP/USDT (based crp.is): $crpPrice\$%0A🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ%0A🍀 Mining Threads: $miningThreads%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Reward Per Thread: $rewardPerThread CRP%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
    miningRewardValue=$(echo "$crpPrice * $miningReward" | bc -l)
    formattedMiningRewardValue=$(printf "%.4f" "$miningRewardValue")
-   messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$"
-   echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue\$${NC}"
+   miningRewardVndValue=$(echo "$sellRate * $formattedMiningRewardValue" | bc -l)
+   formattedMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.2f\n" "$miningRewardVndValue")
+   messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
+   echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue\$ ≈ $formattedMiningRewardVndValueđ${NC}"
 fi
 
 if [ "$lastBlock" -gt "$fromBlock" ]; then
