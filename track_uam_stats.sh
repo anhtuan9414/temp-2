@@ -74,7 +74,7 @@ get_balance_self() {
             }')
     
         if [ -n "$data" ] && [ "$data" != "null" ]; then
-            balance=$(echo $data | grep -oP '"result":\s*\K\d+\.\d+')
+            balance=$(printf "%.8f" "$(echo $data | grep -oP '"result":\s*\K\d+\.\d+')")
             if [ -z "$balance" ] || [ "$balance" == "null" ]; then
                 balance=0
             fi
@@ -170,9 +170,9 @@ value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
 vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
 vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
-messageBot="💰 Mining Stats 💰\n"
+messageBot="🚀 Mining Stats\n"
 
-textStats="$messageBot🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
+textStats="$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
@@ -181,6 +181,29 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    miningRewardVndValue=$(echo "$sellRate * $formattedMiningRewardValue" | bc -l)
    formattedMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$miningRewardVndValue")
    textStats+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
+
+   textStats+="\n\n🏦 Estimated Earnings\n\n"
+   dailyReward=$(echo "$miningReward * 96" | bc -l)
+   dailyRewardValue=$(echo "$crpPrice * $dailyReward" | bc -l)
+   formattedDailyRewardValue=$(printf "%.4f" "$dailyRewardValue")
+   dailyMiningRewardVndValue=$(echo "$sellRate * $formattedDailyRewardValue" | bc -l)
+   formattedDailyMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$dailyMiningRewardVndValue")
+   textStats+="🍀 Daily: $dailyReward CRP ≈ $formattedDailyRewardValue$ ≈ $formattedDailyMiningRewardVndValueđ\n"
+   
+   weeklyReward=$(echo "$dailyReward * 7" | bc -l)
+   weeklyRewardValue=$(echo "$crpPrice * $weeklyReward" | bc -l)
+   formattedWeeklyRewardValue=$(printf "%.4f" "$weeklyRewardValue")
+   weeklyMiningRewardVndValue=$(echo "$sellRate * $formattedWeeklyRewardValue" | bc -l)
+   formattedWeeklyMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$weeklyMiningRewardVndValue")
+   textStats+="🍀 Weekly: $weeklyReward CRP ≈ $formattedWeeklyRewardValue$ ≈ $formattedWeeklyMiningRewardVndValueđ\n"
+   
+   monthlyReward=$(echo "$dailyReward * 30" | bc -l)
+   monthlyRewardValue=$(echo "$crpPrice * $monthlyReward" | bc -l)
+   formattedMonthlyRewardValue=$(printf "%.4f" "$monthlyRewardValue")
+   monthlyMiningRewardVndValue=$(echo "$sellRate * $formattedMonthlyRewardValue" | bc -l)
+   formattedMonthlyMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$monthlyMiningRewardVndValue")
+   textStats+="🍀 Monthly: $monthlyReward CRP ≈ $formattedMonthlyRewardValue$ ≈ $formattedMonthlyMiningRewardVndValueđ"
+   
 fi
 
 if [ -f stats_$API_KEY.txt ]; then
@@ -209,6 +232,10 @@ compare_values() {
         return
     fi
 
+    if [[ "$field" == "Daily" ]]; then
+        messageBot+="\n\n🏦 Estimated Earnings\n"
+    fi
+
     local before_val=$(extract_value "$before_line")
     local after_val=$(extract_value "$after_line")
 
@@ -228,12 +255,12 @@ compare_values() {
             ;;
         "Reward Per Thread")
             unit=" CRP"
-            fo="%.9f"
+            fo="%.8f"
             ;;
         "Total Mining Threads")
             fo="%.0f"
             ;;
-        "USDT/VND Binance P2P" | "CRP Balance")
+        "USDT/VND Binance P2P" | "CRP Balance" | "Mining reward for block" | "Daily" | "Weekly" | "Monthly")
             unit="đ"
             fo="%.0f"
             ;;
@@ -273,6 +300,9 @@ FIELDS=(
     "Reward Per Thread"
     "Total Mining Threads"
     "Mining reward for block"
+    "Daily"
+    "Weekly"
+    "Monthly"
 )
 
 for field in "${FIELDS[@]}"; do
@@ -283,6 +313,6 @@ done
 
 cat stats_$API_KEY.txt
 
-if [ "$lastBlock" -gt "$fromBlock" ]; then
+#if [ "$lastBlock" -gt "$fromBlock" ]; then
    send_telegram_notification "$messageBot"
-fi
+#fi
