@@ -172,7 +172,7 @@ vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
 vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
 messageBot="🚀 Mining Stats\n"
 
-textStats="$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
+textStats="$nowDate\n$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
