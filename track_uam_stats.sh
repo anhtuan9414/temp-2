@@ -1,11 +1,17 @@
 #!/bin/bash
 nowDate=$(date +"%d-%m-%Y %H:%M:%S" --date="7 hours")
-echo $nowDate
+#echo $nowDate
 API_URL="$1"
 API_KEY="$2"
 # Telegram Bot Configuration
 BOT_TOKEN="$3"
 CHAT_ID="$4"
+IMAGE_URL="https://github.com/anhtuan9414/temp-2/raw/main/utopia_banner.jpg"
+IMAGE_PATH="/tmp/utopia_banner.jpg"
+
+if [ ! -f "$IMAGE_PATH" ]; then
+    curl -L -o "$IMAGE_PATH" "$IMAGE_URL"
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -140,9 +146,13 @@ get_usdt_vnd_rate() {
 # Function to send a Telegram notification
 send_telegram_notification() {
     local message="$1"
-    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
-        -d chat_id="$CHAT_ID" \
-        -d text="$message" > /dev/null
+    #curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+    #    -d chat_id="$CHAT_ID" \
+    #    -d text="$message" > /dev/null
+    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendPhoto" \
+     -F chat_id="$CHAT_ID" \
+     -F photo=@"$IMAGE_PATH" \
+     -F caption="$(echo -e "$message")" > /dev/null
 }
 
 get_current_block_self
@@ -168,7 +178,7 @@ vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
 
 echo -e "${GREEN}CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ${NC}"
 
-messageBot="$nowDate%0A%0A⛏️ MINING STATS%0A%0A🍀 CRP/USDT (based crp.is): $crpPrice\$%0A🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ%0A🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ%0A🍀 Mining Threads: $miningThreads%0A🍀 Last Block: $lastBlock%0A🍀 Last Block Time: $lastBlockTime%0A🍀 Reward Per Thread: $rewardPerThread CRP%0A🍀 Total Mining Threads: $totalMiningThreads%0A"
+messageBot="💰 Mining Stats 💰\n\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
