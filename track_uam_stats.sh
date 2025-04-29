@@ -1,6 +1,6 @@
 #!/bin/bash
 nowDate=$(date +"%d-%m-%Y %H:%M:%S" --date="7 hours")
-#echo $nowDate
+echo $nowDate
 API_URL="$1"
 API_KEY="$2"
 # Telegram Bot Configuration
