@@ -204,7 +204,7 @@ compare_values() {
 
     if [[ -z "$after_line" ]]; then return; fi
 
-    if [[ "$field" == "Last Block" || "$field" == "Last Block Time" || "$field" == "Mining reward for block" ]]; then
+    if [[ "$field" == "Last Block" || "$field" == "Last Block Time" ]]; then
         messageBot+="\n$after_line"
         return
     fi
