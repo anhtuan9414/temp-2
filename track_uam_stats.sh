@@ -183,9 +183,15 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    textStats+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
 fi
 
-cp stats_$API_KEY.txt pre_stats_$API_KEY.txt
+if [ -f stats_$API_KEY.txt ]; then
+    cp stats_$API_KEY.txt pre_stats_$API_KEY.txt
+fi
 
 echo -e $textStats > stats_$API_KEY.txt
+
+if [ ! -f pre_stats_$API_KEY.txt ]; then
+    cp stats_$API_KEY.txt pre_stats_$API_KEY.txt
+fi
 
 extract_value() {
     echo "$1" | grep -oE '[0-9]+(,[0-9]{3})*(\.[0-9]+)?' | tr -d ',' | tail -1
