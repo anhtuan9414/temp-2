@@ -313,6 +313,6 @@ done
 
 cat stats_$API_KEY.txt
 
-#if [ "$lastBlock" -gt "$fromBlock" ]; then
+if [ "$lastBlock" -gt "$fromBlock" ]; then
    send_telegram_notification "$messageBot"
-#fi
+fi
