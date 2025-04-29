@@ -75,6 +75,9 @@ get_balance_self() {
     
         if [ -n "$data" ] && [ "$data" != "null" ]; then
             balance=$(echo $data | grep -oP '"result":\s*\K\d+\.\d+')
+            if [ -z "$balance" ] || [ "$balance" == "null" ]; then
+                balance=0
+            fi
             break
         else
             retry_count=$((retry_count + 1))
@@ -162,23 +165,14 @@ get_mining_info
 get_usdt_vnd_rate
 
 echo $lastBlock > $lastBlockStats
-echo -e "${GREEN}Last Block Time: $lastBlockTime${NC}"
-echo -e "${GREEN}Last Block: $lastBlock${NC}"
-echo -e "${GREEN}Mining Threads: $miningThreads${NC}"
-echo -e "${GREEN}Reward Per Thread: $rewardPerThread CRP${NC}"
-echo -e "${GREEN}Total Mining Threads: $totalMiningThreads${NC}"
-echo -e "${GREEN}CRP/USDT (based crp.is): $crpPrice\$${NC}"
-echo -e "${GREEN}USDT/VND P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ${NC}"
 
 value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
 vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
 vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
+messageBot="💰 Mining Stats 💰\n"
 
-
-echo -e "${GREEN}CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ${NC}"
-
-messageBot="💰 Mining Stats 💰\n\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
+textStats="$messageBot🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
@@ -186,9 +180,102 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    formattedMiningRewardValue=$(printf "%.4f" "$miningRewardValue")
    miningRewardVndValue=$(echo "$sellRate * $formattedMiningRewardValue" | bc -l)
    formattedMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$miningRewardVndValue")
-   messageBot+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
-   echo -e "${GREEN}$miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue\$ ≈ $formattedMiningRewardVndValueđ${NC}"
+   textStats+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
 fi
+
+cp stats_$API_KEY.txt pre_stats_$API_KEY.txt
+
+echo -e $textStats > stats_$API_KEY.txt
+
+extract_value() {
+    echo "$1" | grep -oE '[0-9]+(,[0-9]{3})*(\.[0-9]+)?' | tr -d ',' | tail -1
+}
+
+compare_values() {
+    local field="$1"
+    local before_line="$2"
+    local after_line="$3"
+
+    if [[ -z "$after_line" ]]; then return; fi
+
+    if [[ "$field" == "Last Block" || "$field" == "Last Block Time" || "$field" == "Mining reward for block" ]]; then
+        messageBot+="\n$after_line"
+        return
+    fi
+
+    local before_val=$(extract_value "$before_line")
+    local after_val=$(extract_value "$after_line")
+
+    if [[ -z "$before_val" || -z "$after_val" ]]; then
+        messageBot+="\n$after_line"
+        return
+    fi
+
+    before_val="${before_val/,/.}"
+    after_val="${after_val/,/.}"
+
+    local unit=""
+    local fo="%.4f"
+    case "$field" in
+        "CRP/USDT")
+            unit="$"
+            ;;
+        "Reward Per Thread")
+            unit=" CRP"
+            fo="%.9f"
+            ;;
+        "Total Mining Threads")
+            fo="%.0f"
+            ;;
+        "USDT/VND Binance P2P" | "CRP Balance")
+            unit="đ"
+            fo="%.0f"
+            ;;
+    esac
+    delta=$(awk "BEGIN { printf \"$fo\", $after_val - $before_val }")
+    if (( $(awk "BEGIN { print ($delta > 0) }") )); then
+        emoji="🟢"
+    elif (( $(awk "BEGIN { print ($delta < 0) }") )); then
+        emoji="🔴"
+    fi
+
+    if (( $(awk "BEGIN {print ($delta == 0)}") )); then
+        messageBot+="\n$after_line"
+    else
+        if [[ "$unit" == "đ" ]]; then
+            delta_formated=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$delta")
+        else
+            delta_formated=$delta
+        fi
+        if (( $(awk "BEGIN { print ($delta > 0) }") )); then
+            messageBot+="\n$after_line $emoji (+$delta_formated$unit)"
+        else
+            messageBot+="\n$after_line $emoji ($delta_formated$unit)"
+        fi
+    fi
+}
+
+
+
+FIELDS=(
+    "CRP/USDT"
+    "USDT/VND Binance P2P"
+    "CRP Balance"
+    "Mining Threads"
+    "Last Block"
+    "Last Block Time"
+    "Reward Per Thread"
+    "Total Mining Threads"
+    "Mining reward for block"
+)
+
+for field in "${FIELDS[@]}"; do
+    before_line=$(grep -i "$field" pre_stats_$API_KEY.txt | head -1)
+    after_line=$(grep -i "$field" stats_$API_KEY.txt | head -1)
+    compare_values "$field" "$before_line" "$after_line"
+done
+
+cat stats_$API_KEY.txt
 
 if [ "$lastBlock" -gt "$fromBlock" ]; then
    send_telegram_notification "$messageBot"
