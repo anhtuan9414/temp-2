@@ -164,36 +164,39 @@ send_telegram_notification() {
      -F chat_id="$CHANNEL_ID" \
      -F photo=@"$IMAGE_PATH" \
      -F caption="$(echo -e "$POST_TEXT")" > /dev/null
+    echo "✅ Successfully send the post to the channel!"
     
-    # ✅ Step 2: Wait for Telegram to automatically forward the post to the group (small delay)
-    echo "⏳ Waiting for Telegram to forward the post to the group..."
-    sleep 5
-    
-    # ✅ Step 3: Get the message_id of the forwarded post in the group
-    # Find the most recent message in the group with 'is_automatic_forward=true'
-    
-    # Fetch updates (containing the forward in the group)
-    local UPDATE=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
-    
-    # ✅ Extract the message_id from the forwarded message
-    local FORWARDED_MSG_ID=$(echo "$UPDATE" | jq ".result[] | select(.message.chat.id == $GROUP_ID and .message.is_automatic_forward == true) | .message.message_id" | tail -n1)
-    
-    # Check if found
-    if [ -z "$FORWARDED_MSG_ID" ]; then
-      echo "❌ Could not find the forwarded post in the group!"
-      exit 1
+    if [ -n "$COMMENT_TEXT" ] && [ "$COMMENT_TEXT" != "null" ]; then
+        # ✅ Step 2: Wait for Telegram to automatically forward the post to the group (small delay)
+        echo "⏳ Waiting for Telegram to forward the post to the group..."
+        sleep 5
+        
+        # ✅ Step 3: Get the message_id of the forwarded post in the group
+        # Find the most recent message in the group with 'is_automatic_forward=true'
+        
+        # Fetch updates (containing the forward in the group)
+        local UPDATE=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
+        
+        # ✅ Extract the message_id from the forwarded message
+        local FORWARDED_MSG_ID=$(echo "$UPDATE" | jq ".result[] | select(.message.chat.id == $GROUP_ID and .message.is_automatic_forward == true) | .message.message_id" | tail -n1)
+        
+        # Check if found
+        if [ -z "$FORWARDED_MSG_ID" ]; then
+          echo "❌ Could not find the forwarded post in the group!"
+          exit 1
+        fi
+        
+        echo "✅ Found message_id in group: $FORWARDED_MSG_ID"
+        
+        # ✅ Step 4: Send a comment (reply to the post in the group)
+        curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendPhoto" \
+         -F chat_id="$GROUP_ID" \
+         -F photo=@"$IMAGE_PATH_2" \
+         -F caption="$(echo -e "$COMMENT_TEXT")" \
+         -F reply_to_message_id="$FORWARDED_MSG_ID" > /dev/null
+        
+        echo "✅ Successfully commented on the post!"
     fi
-    
-    echo "✅ Found message_id in group: $FORWARDED_MSG_ID"
-    
-    # ✅ Step 4: Send a comment (reply to the post in the group)
-    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendPhoto" \
-     -F chat_id="$GROUP_ID" \
-     -F photo=@"$IMAGE_PATH_2" \
-     -F caption="$(echo -e "$COMMENT_TEXT")" \
-     -F reply_to_message_id="$FORWARDED_MSG_ID" > /dev/null
-    
-    echo "✅ Successfully commented on the post!"
 }
 
 get_current_block_self
@@ -215,10 +218,11 @@ formattedValue=$(printf "%.4f" "$value")
 vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
 vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
 messageBot="🚀 Mining Stats\n"
-messageBotCmt="🏦 Estimated Earnings\n"
+messageBotCmt=""
 
 textStats="$nowDate\n$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
-if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
+if [ -n "$miningReward" ] && [ "$miningReward" != "null" ] && [ "$miningThreads" -ne 0 ]; then
+   messageBotCmt="🏦 Estimated Earnings\n"
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
    miningRewardValue=$(echo "$crpPrice * $miningReward" | bc -l)
@@ -227,7 +231,7 @@ if [ -n "$miningReward" ] && [ "$miningReward" != "null" ]; then
    formattedMiningRewardVndValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$miningRewardVndValue")
    textStats+="🍀 $miningDetails [$formattedTime]: $miningReward CRP ≈ $formattedMiningRewardValue$ ≈ $formattedMiningRewardVndValueđ"
 
-   textStats+="\n\n🏦 Estimated Earnings\n\n"
+   textStats+="\n\n$messageBotCmt\n"
    dailyReward=$(echo "$miningReward * 96" | bc -l)
    dailyRewardValue=$(echo "$crpPrice * $dailyReward" | bc -l)
    formattedDailyRewardValue=$(printf "%.4f" "$dailyRewardValue")
