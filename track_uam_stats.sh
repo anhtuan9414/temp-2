@@ -263,7 +263,7 @@ compare_values() {
             unit=" CRP"
             fo="%.8f"
             ;;
-        "Total Mining Threads")
+        "Total Mining Threads" | "Mining Threads")
             fo="%.0f"
             ;;
         "USDT/VND Binance P2P" | "CRP Balance" | "Mining reward for block" | "Daily" | "Weekly" | "Monthly")
