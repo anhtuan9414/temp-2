@@ -159,12 +159,18 @@ send_telegram_notification() {
 }
 
 get_current_block_self
+
+if [ "$lastBlock" -le "$fromBlock" ]; then
+    echo "✅ Block $lastBlock has been processed. Status: informed."
+    exit 0
+fi
+
+echo $lastBlock > $lastBlockStats
+
 get_balance_self
 get_crp_price
 get_mining_info
 get_usdt_vnd_rate
-
-echo $lastBlock > $lastBlockStats
 
 value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
@@ -313,6 +319,4 @@ done
 
 cat stats_$API_KEY.txt
 
-if [ "$lastBlock" -gt "$fromBlock" ]; then
-   send_telegram_notification "$messageBot"
-fi
+send_telegram_notification "$messageBot"
