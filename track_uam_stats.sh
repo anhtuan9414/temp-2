@@ -140,9 +140,9 @@ get_mining_info() {
 
 get_usdt_vnd_rate() {
     local res=$(curl --compressed 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search' \
-  -H "Content-Type: application/json" \
-  --data-raw '{"fiat":"VND","page":1,"rows":1,"tradeType":"SELL","asset":"USDT","countries":[],"proMerchantAds":false,"shieldMerchantAds":false,"filterType":"tradable","periods":[],"additionalKycVerifyFilter":0,"publisherType":"merchant","payTypes":[],"classifies":["mass","profession","fiat_trade"],"tradedWith":false,"followed":false}')
-    sellRate=$(echo "$res" | jq -r '.data[0].adv.price')
+              -H "Content-Type: application/json" \
+              --data-raw '{"fiat":"VND","page":1,"rows":10,"tradeType":"SELL","asset":"USDT","countries":[],"proMerchantAds":false,"shieldMerchantAds":false,"filterType":"tradable","periods":[],"additionalKycVerifyFilter":0,"publisherType":"merchant","payTypes":[],"classifies":["mass","profession","fiat_trade"],"tradedWith":false,"followed":false}')
+    sellRate=$(echo "$res" | jq -r '.data[].adv.price' | sort -nr | head -n 1)
 }
 
 
