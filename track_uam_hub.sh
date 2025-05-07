@@ -6,9 +6,6 @@ sudo chmod 777 /var/run/docker.sock
 
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
 #docker image prune -a -f
-docker rm -f uam_15 uam_16
-sudo rm -rf /opt/uam_data/uam_15
-sudo rm -rf /opt/uam_data/uam_16
 
 PBKEY=""
 # Colors for output
