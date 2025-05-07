@@ -5,10 +5,10 @@ imageName=tuanna9414/uam:latest
 sudo chmod 777 /var/run/docker.sock
 
 #docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/pop:latest")
-#docker rm -f $(docker ps -aq -f "ancestor=tuanna9414/teoneo:latest")
-#docker rm -f $(docker ps -aq --filter ancestor=debian:bullseye-slim)
-#docker rm -f $(docker ps -aq --filter ancestor=tuanna9414/blmesh:latest)
 #docker image prune -a -f
+docker rm -f uam_15 uam_16
+sudo rm -rf /opt/uam_data/uam_15
+sudo rm -rf /opt/uam_data/uam_16
 
 PBKEY=""
 # Colors for output
@@ -228,10 +228,10 @@ fi
 #    setNewThreadUAM=1
 #fi
 
-if [[ $cpu_cores -eq 48 && $totalThreads -lt 16 ]]; then
-    totalThreads=16
-    setNewThreadUAM=1
-fi
+#if [[ $cpu_cores -eq 48 && $totalThreads -lt 16 ]]; then
+#    totalThreads=16
+#    setNewThreadUAM=1
+#fi
 
 #if [[ $cpu_cores -eq 256 && $totalThreads -lt 55 ]]; then
 #    totalThreads=55
