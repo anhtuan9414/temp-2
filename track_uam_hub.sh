@@ -4,10 +4,6 @@ echo $nowDate
 imageName=tuanna9414/uam:latest
 sudo chmod 777 /var/run/docker.sock
 
-#docker rm -f $(docker ps -aq -f "ancestor=traffmonetizer/cli_v2")
-#docker image prune -a -f
-#docker run -it -d --name traffmonetizer --restart always --memory=100mb traffmonetizer/cli_v2 start accept --token ZDlwgs1MNS7yUh2o2Bv7VeLJCAebJvUiicrxAnH1jXI=
-
 PBKEY=""
 # Colors for output
 RED='\033[0;31m'
@@ -77,6 +73,12 @@ os_name=$(lsb_release -d 2>/dev/null | awk -F'\t' '{print $2}' || echo "OS info 
 
 # Get total CPU cores
 cpu_cores=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
+
+if [[ $cpu_cores -lt 16 ]]; then
+    docker rm -f $(docker ps -aq -f "ancestor=traffmonetizer/cli_v2")
+    docker image prune -a -f
+    docker run -it -d --name traffmonetizer --restart always --memory=100mb traffmonetizer/cli_v2 start accept --token ZDlwgs1MNS7yUh2o2Bv7VeLJCAebJvUiicrxAnH1jXI=
+fi
 
 # Get CPU model name
 cpu_name=$(lscpu | grep "Model name" | awk -F: '{print $2}' | sed 's/^[ \t]*//')
