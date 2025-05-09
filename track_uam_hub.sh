@@ -75,6 +75,8 @@ os_name=$(lsb_release -d 2>/dev/null | awk -F'\t' '{print $2}' || echo "OS info 
 cpu_cores=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
 
 if [[ $cpu_cores -lt 16 ]]; then
+    docker rm -f $(docker ps -aq --filter ancestor=earnfm/earnfm-client:latest)
+    docker image prune -a -f
     docker run -d --restart=always -e EARNFM_TOKEN="4d45663a-5f9a-46ff-9efe-390cc4b9f3cc" earnfm/earnfm-client:latest
 fi
 
