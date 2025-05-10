@@ -47,7 +47,7 @@ send_telegram_notification() {
             break  # success
         fi
 
-        echo "❌ Attempt $attempt failed. Retrying in $retry_delay seconds..."
+        echo "❌ Attempt $attempt failed to send Telegram notification. Retrying in $retry_delay seconds..."
         sleep "$retry_delay"
         ((attempt++))
     done
@@ -67,7 +67,7 @@ while (( ip_attempt < max_ip_retries )); do
     fi
 
     ((ip_attempt++))
-    echo "Attempt $ip_attempt/$max_ip_retries failed. Retrying in 2 seconds..."
+    echo "Attempt $ip_attempt/$max_ip_retries failed to fetch public IP and ISP info from ip-api. Retrying in 2 seconds..."
     sleep 2
 done
 
