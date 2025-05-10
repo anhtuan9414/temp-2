@@ -31,8 +31,8 @@ CHAT_ID="1058406039"
 # Function to send a Telegram notification
 send_telegram_notification() {
     local message="$1"
-    local max_retries=20
-    local retry_delay=5  # seconds
+    local max_retries=30
+    local retry_delay=3  # seconds
     local attempt=1
     local response
 
