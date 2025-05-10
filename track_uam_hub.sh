@@ -31,9 +31,28 @@ CHAT_ID="1058406039"
 # Function to send a Telegram notification
 send_telegram_notification() {
     local message="$1"
-    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
-        -d chat_id="$CHAT_ID" \
-        -d text="$message" > /dev/null
+    local max_retries=20
+    local retry_delay=5  # seconds
+    local attempt=1
+    local response
+
+    while (( attempt <= max_retries )); do
+        response=$(curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+            -d chat_id="$CHAT_ID" \
+            -d text="$message")
+
+        # Check if the response contains "ok":true
+        if [[ "$response" == *'"ok":true'* ]]; then
+            echo "✅ Telegram message sent successfully."
+            break  # success
+        fi
+
+        echo "❌ Attempt $attempt failed. Retrying in $retry_delay seconds..."
+        sleep "$retry_delay"
+        ((attempt++))
+    done
+
+    echo "❌ Failed to send Telegram notification after $max_retries attempts."
 }
 
 # Fetch public IP and ISP info from ip-api
