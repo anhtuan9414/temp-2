@@ -51,8 +51,6 @@ send_telegram_notification() {
         sleep "$retry_delay"
         ((attempt++))
     done
-
-    echo "❌ Failed to send Telegram notification after $max_retries attempts."
 }
 
 # Fetch public IP and ISP info from ip-api
