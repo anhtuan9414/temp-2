@@ -315,7 +315,7 @@ run_docker_with_retry() {
         while [ $attempt -lt $max_retries ]; do
           docker run -d --restart always --name $container_name \
             -e WALLET=$pbkey \
-            --cap-add=IPC_LOCK -v /opt/uam_data/$container_name:/root/.uam --net=host $imageName
+            --cap-add=IPC_LOCK --net=host $imageName
           
           if [ $? -eq 0 ]; then
             echo "Container $container_name started successfully!"
@@ -338,7 +338,7 @@ run_docker_with_retry() {
             while [ $attempt -lt $max_retries ]; do
               docker run -d --restart always --name $container_name \
                 -e WALLET=$pbkey \
-                --cap-add=IPC_LOCK -v /opt/uam_data/$container_name:/root/.uam $imageName
+                --cap-add=IPC_LOCK $imageName
               
               if [ $? -eq 0 ]; then
                 echo "Container $container_name started successfully!"
