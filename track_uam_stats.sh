@@ -156,6 +156,77 @@ get_crp_delegated() {
     totalCRPDelegated=$(echo "$res" | jq '[.result.investors[].amount | tonumber] | add')
 }
 
+get_list_total_mining_threads() {
+    max_retries=30
+    retry_count=0
+    while [ $retry_count -lt $max_retries ]; do
+        local data=$(curl -s -X POST $API_URL/api/1.0 \
+            -H "Content-Type: application/json" \
+            -d '{
+                "method": "getMiningBlocksWithTreasury",
+                "params": {
+                    "fromBlockId": "",
+                    "limit": "96"
+                },
+                "token": "'"$API_KEY"'"
+            }')
+    
+        if [ -n "$data" ] && [ "$data" != "null" ]; then
+            local data_file="list_total_mining_threads_$API_KEY.dat"
+            rm -f $data_file
+            echo "$data" | jq -c '.result[]' | while read -r entry; do
+                dateTime=$(echo "$entry" | grep -oP '"dateTime":\s*"\K[^"]+')
+                miners=$(echo "$entry" | grep -oP '"numberMiners":\s*\K[0-9]+')
+            
+                formatted_time=$(date -d "$dateTime +7 hours" +"%d-%m-%Y %H:%M")
+                
+                echo "\"$formatted_time\" $miners" >> "$data_file"
+            done
+            echo "Generated $data_file"
+            break
+        else
+            retry_count=$((retry_count + 1))
+            echo "Attempt $retry_count/$max_retries failed to fetch list total mining threads. Retrying in 10 seconds..."
+            sleep 10
+        fi
+    done
+}
+
+generate_chart() {
+    local data_file="list_total_mining_threads_$API_KEY.dat"
+    # Create gnuplot script
+    gnuplot_script="plot_chart.gnuplot"
+    printf '%s\n' \
+    "set terminal png size 800,600" \
+    "set output 'mining_chart_final_$API_KEY.png'" \
+    "" \
+    "set xdata time" \
+    "set timefmt '\"%d-%m-%Y %H:%M\"'" \
+    "set format x '%d-%m-%Y %H:%M'" \
+    "set xtics rotate by -45 font ',8'" \
+    "set grid" \
+    "" \
+    "# Background color #3b3e4a and white text" \
+    "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb\"#3b3e4a\" behind" \
+    "set border lc rgb \"white\"" \
+    "set tics textcolor rgb \"white\"" \
+    "set title \"Total mining threads\" textcolor rgb \"white\"" \
+    "set xlabel \"Time\" textcolor rgb \"white\"" \
+    "set ylabel \"Threads\" textcolor rgb \"white\"" \
+    "" \
+    "# Remove legend" \
+    "unset key" \
+    "" \
+    "# Plot line with color #6c98fd, no points" \
+    "plot \"$data_file\" using 1:2 with lines lt rgb \"#6c98fd\" lw 2" \
+    > "$gnuplot_script"
+        
+    # Run gnuplot to generate chart
+    gnuplot "$gnuplot_script"
+    
+    echo "Chart generated: mining_chart_final_$API_KEY.png"
+}
+
 # Function to send a Telegram notification
 send_telegram_notification() {
     local message="$1"
@@ -164,7 +235,7 @@ send_telegram_notification() {
     #    -d text="$message" > /dev/null
     curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendPhoto" \
      -F chat_id="$CHAT_ID" \
-     -F photo=@"$IMAGE_PATH" \
+     -F photo=@"./mining_chart_final_$API_KEY.png" \
      -F caption="$(echo -e "$message")" > /dev/null
 }
 
@@ -182,6 +253,8 @@ get_crp_price
 get_mining_info
 get_usdt_vnd_rate
 get_crp_delegated
+get_list_total_mining_threads
+generate_chart
 
 maximumThreads=$(echo "$totalCRPDelegated $balance" | awk '{print int(($1 + $2) / 64)}')
 value=$(echo "$crpPrice * $balance" | bc -l)
