@@ -145,6 +145,16 @@ get_usdt_vnd_rate() {
     sellRate=$(echo "$res" | jq -r '.data[].adv.price' | sort -nr | head -n 1)
 }
 
+get_crp_delegated() {
+    local res=$(curl -s -X POST $API_URL/api/1.0 \
+                    -H "Content-Type: application/json" \
+                    -d '{
+                        "method": "getDPoSInfo",
+                        "params": {},
+                        "token": "'"$API_KEY"'"
+                    }')
+    totalCRPDelegated=$(echo "$res" | jq '[.result.investors[].amount | tonumber] | add')
+}
 
 # Function to send a Telegram notification
 send_telegram_notification() {
@@ -171,14 +181,16 @@ get_balance_self
 get_crp_price
 get_mining_info
 get_usdt_vnd_rate
+get_crp_delegated
 
+maximumThreads=$(echo "$totalCRPDelegated $balance" | awk '{print int(($1 + $2) / 64)}')
 value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
 vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
 vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
 messageBot="🚀 Mining Stats\n"
 
-textStats="$nowDate\n$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
+textStats="$nowDate\n$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Maximum Threads: $maximumThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ] && [ "$miningThreads" -ne 0 ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
@@ -263,7 +275,7 @@ compare_values() {
             unit=" CRP"
             fo="%.8f"
             ;;
-        "Total Mining Threads" | "Mining Threads")
+        "Total Mining Threads" | "Mining Threads" | "Maximum Threads")
             fo="%.0f"
             ;;
         "USDT/VND Binance P2P" | "CRP Balance" | "Mining reward for block" | "Daily" | "Weekly" | "Monthly")
@@ -301,6 +313,7 @@ FIELDS=(
     "USDT/VND Binance P2P"
     "CRP Balance"
     "Mining Threads"
+    "Maximum Threads"
     "Last Block"
     "Last Block Time"
     "Reward Per Thread"
