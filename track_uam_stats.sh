@@ -216,7 +216,7 @@ generate_chart() {
     "set title \"Total mining threads & Profit\" textcolor rgb \"white\"" \
     "set xlabel \"Time\" textcolor rgb \"white\"" \
     "set ylabel \"Threads\" textcolor rgb \"white\"" \
-    "set y2label \"Profit (CRP)\" textcolor rgb \"white\"" \
+    "set y2label \"Reward (CRP)\" textcolor rgb \"white\"" \
     "set y2tics textcolor rgb \"white\"" \
     "set y2range [0:*]" \
     "" \
@@ -224,7 +224,7 @@ generate_chart() {
     "set key at screen 0.98,0.98 textcolor rgb \"white\" font ',8'" \
     "" \
     "plot \"$data_file\" using 1:2 axes x1y1 with lines lt rgb \"#6c98fd\" lw 2 title 'Threads', \\" \
-    "     \"$data_file\" using 1:3 axes x1y2 with lines lt rgb \"#ff4d4d\" lw 2 title 'Profit (CRP)'" \
+    "     \"$data_file\" using 1:3 axes x1y2 with lines lt rgb \"#ff4d4d\" lw 2 title 'Reward (CRP)'" \
     > "$gnuplot_script"
         
     # Run gnuplot to generate chart
