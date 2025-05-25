@@ -176,13 +176,16 @@ get_list_total_mining_threads() {
             rm -f $data_file
             echo "$data" | jq -c '.result[]' | while read -r entry; do
                 dateTime=$(echo "$entry" | grep -oP '"dateTime":\s*"\K[^"]+')
-                miners=$(echo "$entry" | grep -oP '"numberMiners":\s*\K[0-9]+')
-            
+                numberMiners=$(echo "$entry" | grep -oP '"numberMiners":\s*\K[0-9]+')
+                involvedInCount=$(echo "$entry" | grep -oP '"involvedInCount":\s*\K\d+')
+                pricePerThread=$(echo "$entry" | grep -oP '"price":\s*\K\d+\.\d+')
+                miningRewardValue=$(echo "$involvedInCount * $pricePerThread" | bc -l)
+                formattedMiningRewardValue=$(printf "%.6f" "$miningRewardValue")
                 formatted_time=$(date -d "$dateTime +7 hours" +"%d-%m-%Y %H:%M")
                 
-                echo "\"$formatted_time\" $miners" >> "$data_file"
+                echo "\"$formatted_time\" $numberMiners $formattedMiningRewardValue" >> "$data_file"
             done
-            echo "Generated $data_file"
+            echo "✅ Generated $data_file"
             break
         else
             retry_count=$((retry_count + 1))
@@ -199,7 +202,7 @@ generate_chart() {
     printf '%s\n' \
     "set terminal png size 800,600" \
     "set output 'mining_chart_final_$API_KEY.png'" \
-    "" \
+     "" \
     "set xdata time" \
     "set timefmt '\"%d-%m-%Y %H:%M\"'" \
     "set format x '%d-%m-%Y %H:%M'" \
@@ -210,21 +213,24 @@ generate_chart() {
     "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb\"#3b3e4a\" behind" \
     "set border lc rgb \"white\"" \
     "set tics textcolor rgb \"white\"" \
-    "set title \"Total mining threads\" textcolor rgb \"white\"" \
+    "set title \"Total mining threads & Profit\" textcolor rgb \"white\"" \
     "set xlabel \"Time\" textcolor rgb \"white\"" \
     "set ylabel \"Threads\" textcolor rgb \"white\"" \
+    "set y2label \"Profit (CRP)\" textcolor rgb \"white\"" \
+    "set y2tics textcolor rgb \"white\"" \
+    "set y2range [0:*]" \
     "" \
-    "# Remove legend" \
-    "unset key" \
+    "# Hiển thị legend (chú thích)" \
+    "set key at screen 0.98,0.98 textcolor rgb \"white\" font ',8'" \
     "" \
-    "# Plot line with color #6c98fd, no points" \
-    "plot \"$data_file\" using 1:2 with lines lt rgb \"#6c98fd\" lw 2" \
+    "plot \"$data_file\" using 1:2 axes x1y1 with lines lt rgb \"#6c98fd\" lw 2 title 'Threads', \\" \
+    "     \"$data_file\" using 1:3 axes x1y2 with lines lt rgb \"#ff4d4d\" lw 2 title 'Profit (CRP)'" \
     > "$gnuplot_script"
         
     # Run gnuplot to generate chart
     gnuplot "$gnuplot_script"
     
-    echo "Chart generated: mining_chart_final_$API_KEY.png"
+    echo "✅ Chart generated: mining_chart_final_$API_KEY.png"
 }
 
 # Function to send a Telegram notification
