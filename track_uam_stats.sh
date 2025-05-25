@@ -197,6 +197,7 @@ get_list_total_mining_threads() {
 
 generate_chart() {
     local data_file="list_total_mining_threads_$API_KEY.dat"
+    rm -f mining_chart_final_$API_KEY.png
     # Create gnuplot script
     gnuplot_script="plot_chart.gnuplot"
     printf '%s\n' \
