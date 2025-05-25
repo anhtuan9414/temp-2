@@ -213,14 +213,13 @@ generate_chart() {
     "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb\"#3b3e4a\" behind" \
     "set border lc rgb \"white\"" \
     "set tics textcolor rgb \"white\"" \
-    "set title \"Total Mining Threads and Reward\" textcolor rgb \"white\""
+    "set title \"Total mining threads and Reward\" textcolor rgb \"white\"" \
     "set xlabel \"Time\" textcolor rgb \"white\"" \
     "set ylabel \"Threads\" textcolor rgb \"white\"" \
     "set y2label \"Reward (CRP)\" textcolor rgb \"white\"" \
     "set y2tics textcolor rgb \"white\"" \
     "set y2range [0:*]" \
     "" \
-    "# Hiển thị legend (chú thích)" \
     "set key at screen 0.98,0.98 textcolor rgb \"white\" font ',8'" \
     "" \
     "plot \"$data_file\" using 1:2 axes x1y1 with lines lt rgb \"#6c98fd\" lw 2 title 'Threads', \\" \
