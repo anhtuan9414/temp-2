@@ -213,7 +213,7 @@ generate_chart() {
     "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb\"#3b3e4a\" behind" \
     "set border lc rgb \"white\"" \
     "set tics textcolor rgb \"white\"" \
-    "set title \"Total mining threads & Profit\" textcolor rgb \"white\"" \
+    "set title \"Total Mining Threads and Reward\" textcolor rgb \"white\""
     "set xlabel \"Time\" textcolor rgb \"white\"" \
     "set ylabel \"Threads\" textcolor rgb \"white\"" \
     "set y2label \"Reward (CRP)\" textcolor rgb \"white\"" \
