@@ -56,12 +56,12 @@ get_current_block_self() {
 }
 lastBlockStats=lastBlockStats_$API_KEY.txt
 fromBlock=$(cat $lastBlockStats 2>/dev/null)
+if [ -z "$fromBlock" ] || [ "$fromBlock" == "null" ]; then
+    fromBlock=184846
+fi
 get_balance_self() {
     max_retries=30
     retry_count=0
-    if [ -z "$fromBlock" ] || [ "$fromBlock" == "null" ]; then
-        fromBlock=184846
-    fi
     while [ $retry_count -lt $max_retries ]; do
         local data=$(curl -s -X POST $API_URL/api/1.0 \
             -H "Content-Type: application/json" \
