@@ -231,6 +231,7 @@ generate_chart() {
     gnuplot "$gnuplot_script"
     
     echo "✅ Chart generated: mining_chart_final_$API_KEY.png"
+    rm -f $gnuplot_script
 }
 
 # Function to send a Telegram notification
