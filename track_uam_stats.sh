@@ -264,13 +264,18 @@ get_list_total_mining_threads
 generate_chart
 
 maximumThreads=$(echo "$totalCRPDelegated $balance" | awk '{print int(($1 + $2) / 64)}')
+totalCRPDelegatedValue=$(echo "$crpPrice * $totalCRPDelegated" | bc -l)
+formattedTotalCRPDelegatedValue=$(printf "%.4f" "$totalCRPDelegatedValue")
+totalCRPDelegatedVndValue=$(echo "$sellRate * $formattedTotalCRPDelegatedValue" | bc -l)
+totalCRPDelegatedVndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$totalCRPDelegatedVndValue")
+
 value=$(echo "$crpPrice * $balance" | bc -l)
 formattedValue=$(printf "%.4f" "$value")
 vndValue=$(echo "$sellRate * $formattedValue" | bc -l)
 vndFormattedValue=$(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$vndValue")
 messageBot="🚀 Mining Stats\n"
 
-textStats="$nowDate\n$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Maximum Threads: $maximumThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
+textStats="$nowDate\n$messageBot\n🍀 CRP/USDT (based crp.is): $crpPrice\$\n🍀 USDT/VND Binance P2P: $(LC_NUMERIC=en_US.UTF-8 printf "%'.0f\n" "$sellRate")đ\n🍀 CRP Balance: $balance CRP ≈ $formattedValue\$ ≈ $vndFormattedValueđ\n🍀 CRP Invested: $totalCRPDelegated CRP ≈ $formattedTotalCRPDelegatedValue\$ ≈ $totalCRPDelegatedVndFormattedValueđ\n🍀 Mining Threads: $miningThreads\n🍀 Maximum Threads: $maximumThreads\n🍀 Last Block: $lastBlock\n🍀 Last Block Time: $lastBlockTime\n🍀 Reward Per Thread: $rewardPerThread CRP\n🍀 Total Mining Threads: $totalMiningThreads\n"
 if [ -n "$miningReward" ] && [ "$miningReward" != "null" ] && [ "$miningThreads" -ne 0 ]; then
    echo $miningCreated > $lastMiningDateStats
    formattedTime=$(date -d "$miningCreated UTC +7 hours" +"%d-%m-%Y %H:%M")
@@ -358,7 +363,7 @@ compare_values() {
         "Total Mining Threads" | "Mining Threads" | "Maximum Threads")
             fo="%.0f"
             ;;
-        "USDT/VND Binance P2P" | "CRP Balance" | "Mining reward for block" | "Daily" | "Weekly" | "Monthly")
+        "USDT/VND Binance P2P" | "CRP Balance" | "CRP Invested" | "Mining reward for block" | "Daily" | "Weekly" | "Monthly")
             unit="đ"
             fo="%.0f"
             ;;
@@ -392,6 +397,7 @@ FIELDS=(
     "CRP/USDT"
     "USDT/VND Binance P2P"
     "CRP Balance"
+    "CRP Invested"
     "Mining Threads"
     "Maximum Threads"
     "Last Block"
